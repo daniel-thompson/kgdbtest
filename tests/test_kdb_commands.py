@@ -8,14 +8,28 @@ def enter_kdb(self):
 	self.expect('Entering kdb')
 	self.expect_kdb()
 
+	self.old_expect_prompt = self.expect_prompt
+	self.expect_prompt = self.expect_kdb
+
 def expect_kdb(self):
-	# TODO: Manage the pager until we get the kdb prompt
-	self.expect('kdb>')
+	'''
+	Manage the pager until we get a kdb prompt (or timeout)
+	'''
+	while True:
+		if 0 == self.expect(['kdb>', 'more>']):
+			return
+		self.send(' ')
 
 def exit_kdb(self):
 	self.send('go\r')
+	self.expect_prompt = self.old_expect_prompt
+
+	# We should now be running again but whether or not we get a
+	# prompt depends on how the debugger was triggered. This
+	# technique ensures we are fully up to date with the input.
+	self.send('echo "FORCE"_"IO"_"SYNC"\r')
+	self.expect('FORCE_IO_SYNC')
 	self.expect_prompt()
-	
 
 def bind_methods(c):
 	# TODO: Can we use introspection to find methods to bind?
@@ -40,11 +54,25 @@ def kdb():
 	qemu.close()
 
 def test_nop(kdb):
+	'''
+	Simple nop test.
+
+	Check that the basic console management is working OK.
+	'''
 	kdb.console.enter_kdb()
 	kdb.console.exit_kdb()
 
 def test_go(kdb):
 	kdb.console.enter_kdb()
+	Test the `go` command.
+
+	This test does not use enter_kdb() because it ends by calling
+	go directly (meaning the enter/exit would be mis-matched and
+	this would expect_prompt() broken for the next test.
+	'''
+	kdb.console.sysrq('g')
+	kdb.console.expect('Entering kdb')
+	kdb.console.expect_kdb()
 	kdb.console.send('go\r')
 	kdb.console.expect_prompt()
 
