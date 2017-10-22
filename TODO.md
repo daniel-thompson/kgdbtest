@@ -1,7 +1,6 @@
 TODO
 ====
 
- * Honour V=1
  * Honour RESTRICT=smoke
  * Add support for additional architectures
    - ARCH=arm
