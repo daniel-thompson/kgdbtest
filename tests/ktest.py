@@ -63,12 +63,19 @@ class ConsoleWrapper(object):
 def qemu(second_uart=False, gdb=False, append=None):
 	'''Create a qemu instance and provide pexpect channels to control it'''
 
-	cmdline = ''
-	cmdline += ' console=ttyS0,115200'
-	if not second_uart:
-		cmdline += ' kgdboc=ttyS0'
+	arch = kbuild.get_arch()
+
+	if arch == 'arm':
+		tty = 'ttyAMA'
 	else:
-		cmdline += ' kgdboc=ttyS1'
+		tty = 'ttyS'
+
+	cmdline = ''
+	cmdline += ' console={}0,115200'.format(tty)
+	if not second_uart:
+		cmdline += ' kgdboc={}0'.format(tty)
+	else:
+		cmdline += ' kgdboc={}1'.format(tty)
 	if gdb:
 		cmdline += ' nokaslr'
 	if append:
@@ -76,9 +83,17 @@ def qemu(second_uart=False, gdb=False, append=None):
 
 	# Heavily broken out so we can easily slot in support for other
 	# architectures.
-	cmd = 'qemu-system-x86_64'
-	#cmd = 'QEMU_AUDIO_DRV=none ' + cmd
-	cmd += ' -enable-kvm'
+	if arch == 'arm':
+		cmd = 'qemu-system-arm'
+		cmd += ' -accel tcg,thread=multi '
+		cmd += ' -M vexpress-a15 -cpu cortex-a15'
+		cmd += ' -kernel arch/arm/boot/zImage'
+		cmd += ' -dtb arch/arm/boot/dts/vexpress-v2p-ca15-tc1.dtb'
+	else:
+		cmd = 'qemu-system-x86_64'
+		cmd += ' -enable-kvm'
+		cmd += ' -kernel arch/x86/boot/bzImage'
+
 	cmd += ' -m 1G'
 	cmd += ' -smp 2'
 	cmd += ' -nographic -monitor none'
@@ -86,14 +101,14 @@ def qemu(second_uart=False, gdb=False, append=None):
 	if second_uart:
 		cmd += ' -chardev socket,id=ttyS1,path=ttyS1.sock,server,nowait'
 		cmd += ' -serial chardev:ttyS1'
-	cmd += ' -kernel arch/x86/boot/bzImage'
 	cmd += ' -initrd rootfs.cpio.gz'
 	cmd += ' -append "{}"'.format(cmdline)
 	print('+| ' + cmd)
 	qemu = pexpect.spawn(cmd, encoding='utf-8', logfile=sys.stdout)
 
 	if gdb:
-		gdbcmd = 'gdb vmlinux'
+		gdbcmd = '{}gdb'.format(kbuild.get_cross_compile())
+		gdbcmd += ' vmlinux'
 		gdbcmd += ' -ex "set pagination 0"'
 		print('+| ' + gdbcmd)
 		gdb = pexpect.spawn(gdbcmd,

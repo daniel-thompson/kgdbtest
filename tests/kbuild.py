@@ -2,6 +2,20 @@ import os
 import traceback
 import sys
 
+def get_arch():
+	if 'ARCH' in os.environ:
+		return os.environ['ARCH']
+
+	# TODO: Look up host architecture...
+	return 'x86'
+
+def get_cross_compile():
+	if 'CROSS_COMPILE' in os.environ:
+		return os.environ['CROSS_COMPILE']
+
+	return ''
+
+
 def run(cmd, failmsg=None):
 	'''Run a command (synchronously) raising an exception on
 	failure.
@@ -23,7 +37,7 @@ def run(cmd, failmsg=None):
 
 def skip(msg):
 	"""Report a catastrophic build error.
-        
+
         A catastrophic build error occurs when we cannot build the software
         under test. This makes testing of any form impossible. We treat this
         specially (and completely out of keeping with pytest philosophy because
@@ -43,7 +57,13 @@ def config(kgdb=False):
 	#       environment variables we need.
 	os.chdir(os.environ['KERNEL_DIR'])
 
-	run('make defconfig',
+	arch = get_arch()
+	if 'arm' == arch:
+		defconfig = 'multi_v7_defconfig'
+	else:
+		defconfig = 'defconfig'
+
+	run('make {}'.format(defconfig),
 		'Cannot configure kernel (wrong directory)')
 
 	if kgdb:
@@ -52,17 +72,20 @@ def config(kgdb=False):
 			'--enable MAGIC_SYSRQ ' +
 			'--enable KGDB --enable KGDB_KDB --enable KDB_KEYBOARD',
 			'Cannot configure kgdb extensions')
-		
+
 	if need_olddefconfig:
 		run('make olddefconfig',
 			'Cannot finalize kernel configuration')
 
 def build():
-	run('make -j `nproc` all modules_install ' +
+	arch = get_arch()
+
+	run('make -s -j `nproc` all modules_install ' +
 		'INSTALL_MOD_PATH=$PWD/mod-rootfs INSTALL_MOD_STRIP=1',
 		'Cannot compile kernel')
 
-	run('unxz -c $KCONTEST_DIR/buildroot/x86/rootfs.cpio.xz > rootfs.cpio',
+	run('unxz -c $KCONTEST_DIR/buildroot/{}/rootfs.cpio.xz > rootfs.cpio'
+			.format(get_arch()),
 		'Cannot decompress rootfs')
 	run('(cd mod-rootfs; find . | cpio -H newc -AoF ../rootfs.cpio)',
 		'Cannot copy kernel modules into rootfs')

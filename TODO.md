@@ -2,7 +2,6 @@ TODO
 ====
 
  * Add support for additional architectures
-   - ARCH=arm
    - ARCH=arm64
  * Automatically build and install a kernel module to make it easier to
    stimulate specific kernel behaviours
