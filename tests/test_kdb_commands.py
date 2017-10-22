@@ -62,8 +62,15 @@ def test_nop(kdb):
 	kdb.console.enter_kdb()
 	kdb.console.exit_kdb()
 
-def test_go(kdb):
+def test_help(kdb):
 	kdb.console.enter_kdb()
+	kdb.console.send('help\r')
+	kdb.console.expect('go.*Continue Execution')
+	kdb.console.expect_prompt()
+	kdb.console.exit_kdb()
+
+def test_go(kdb):
+	'''
 	Test the `go` command.
 
 	This test does not use enter_kdb() because it ends by calling
