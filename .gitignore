@@ -1,0 +1,4 @@
+.*.swp
+.cache/
+rootfs.cpio.xz
+__pycache__/
