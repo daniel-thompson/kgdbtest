@@ -78,8 +78,6 @@ def config(kgdb=False):
 			'Cannot finalize kernel configuration')
 
 def build():
-	arch = get_arch()
-
 	run('make -s -j `nproc` all modules_install ' +
 		'INSTALL_MOD_PATH=$PWD/mod-rootfs INSTALL_MOD_STRIP=1',
 		'Cannot compile kernel')

@@ -65,7 +65,7 @@ def qemu(second_uart=False, gdb=False, append=None):
 
 	arch = kbuild.get_arch()
 
-	if arch == 'arm':
+	if arch == 'arm' or arch == 'arm64':
 		tty = 'ttyAMA'
 	else:
 		tty = 'ttyS'
@@ -89,10 +89,17 @@ def qemu(second_uart=False, gdb=False, append=None):
 		cmd += ' -M vexpress-a15 -cpu cortex-a15'
 		cmd += ' -kernel arch/arm/boot/zImage'
 		cmd += ' -dtb arch/arm/boot/dts/vexpress-v2p-ca15-tc1.dtb'
-	else:
+	elif arch == 'arm64':
+		cmd = 'qemu-system-aarch64'
+		cmd += ' -accel tcg,thread=multi '
+		cmd += ' -M virt,gic_version=3 -cpu cortex-a57'
+		cmd += ' -kernel arch/arm64/boot/Image'
+	elif arch == 'x86':
 		cmd = 'qemu-system-x86_64'
 		cmd += ' -enable-kvm'
 		cmd += ' -kernel arch/x86/boot/bzImage'
+	else:
+		assert False
 
 	cmd += ' -m 1G'
 	cmd += ' -smp 2'
