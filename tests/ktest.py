@@ -33,6 +33,9 @@ def gdb_connect_to_target(self):
 
 def gdb_expect_prompt(self):
 	self.expect('[(]gdb[)] ')
+	self.sendline('printf "force_gdb_sync"')
+	# No newline means the output here will be unique
+	self.expect('force_gdb_sync.gdb. ')
 
 def sysrq(self, ch):
 	self.send('echo {} > /proc/sysrq-trigger\r'.format(ch))
