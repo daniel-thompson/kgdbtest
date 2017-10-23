@@ -26,8 +26,13 @@ sudo dnf install \
 	socat
 ~~~
 
-Quickstart
-----------
+Buildroot
+---------
+
+TODO (but see the defconfig files in `buildroot/`).
+
+Running tests
+-------------
 
 kcontest currently relies upon external environment variables. These are
 set up automatically by the `Makefile`.
