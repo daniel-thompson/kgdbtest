@@ -78,10 +78,11 @@ def config(kgdb=False):
 			'Cannot finalize kernel configuration')
 
 def build():
-	run('make -s -j `nproc` all modules_install ' +
-		'INSTALL_MOD_PATH=$PWD/mod-rootfs INSTALL_MOD_STRIP=1',
+	run('make -s -j `nproc` all',
 		'Cannot compile kernel')
-
+	run('make -s -j `nproc` modules_install ' +
+		'INSTALL_MOD_PATH=$PWD/mod-rootfs INSTALL_MOD_STRIP=1',
+		'Cannot install kernel modules')
 	run('unxz -c $KCONTEST_DIR/buildroot/{}/rootfs.cpio.xz > rootfs.cpio'
 			.format(get_arch()),
 		'Cannot decompress rootfs')
