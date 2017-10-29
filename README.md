@@ -39,7 +39,32 @@ sudo apt install -y \
 Buildroot
 ---------
 
-TODO (but see the defconfig files in `buildroot/`).
+kcontest relies on buildroot filesystems, normally loaded as an
+initramfs. kcontest includes .config files to regenerate the
+filesystem from scratch. The Makefile also has a few convience
+rules to help construct the filesystem.
+
+~~~
+ARCH=arm BUILDROOT=/path/to/buildroot/ make buildroot-config
+ARCH=arm make buildroot
+
+ARCH=arm64 BUILDROOT=/path/to/buildroot/ make buildroot-config
+ARCH=arm64 make buildroot
+
+ARCH=x86 BUILDROOT=/path/to/buildroot/ make buildroot-config
+ARCH=x86 make buildroot
+~~~
+
+Alternatively once buildroot-config has been run it is possible
+to run all buildroot rules directly from the build directory:
+
+~~~
+make -C buildroot/arm menuconfig
+~~~
+
+Finally the Makefile has a special rule, `buildroot-tidy`, that
+saves diskspace by deleting files that are not needed to run
+kcontext.
 
 Running tests
 -------------
