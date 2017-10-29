@@ -15,7 +15,6 @@ def get_cross_compile():
 
 	return ''
 
-
 def run(cmd, failmsg=None):
 	'''Run a command (synchronously) raising an exception on
 	failure.
@@ -50,24 +49,30 @@ def skip(msg):
 
 def config(kgdb=False):
 	need_olddefconfig=kgdb
+	arch = get_arch()
 
 	# HACK: Still trying to come up with a nice way to handle the two
 	#       directories involved (kernel and kcontest). For now we'll
 	#       just hack things and rely on the Makefile to set up the
 	#       environment variables we need.
-	os.chdir(os.environ['KERNEL_DIR'])
 
-	arch = get_arch()
+	kdir = os.environ['KERNEL_DIR'] + '/build-{}'.format(arch)
+	try:
+		os.mkdir(kdir)
+	except FileExistsError:
+		pass
+	os.chdir(kdir)
+
 	if 'arm' == arch:
 		defconfig = 'multi_v7_defconfig'
 	else:
 		defconfig = 'defconfig'
 
-	run('make {}'.format(defconfig),
+	run('make -C .. O=$PWD {}'.format(defconfig),
 		'Cannot configure kernel (wrong directory)')
 
 	if kgdb:
-		run('scripts/config ' +
+		run('../scripts/config ' +
 			'--enable DEBUG_INFO ' +
 			'--enable MAGIC_SYSRQ ' +
 			'--enable KGDB --enable KGDB_KDB --enable KDB_KEYBOARD',
