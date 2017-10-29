@@ -19,7 +19,17 @@ additional python libraries.
 On Fedora systems these can be installed as follows:
 
 ~~~
-sudo dnf install \
+sudo dnf install -y \
+	python3 \
+	python3-pexpect \
+	python3-pytest \
+	socat
+~~~
+
+Likewise on debian systems:
+
+~~~
+sudo apt install -y \
 	python3 \
 	python3-pexpect \
 	python3-pytest \
