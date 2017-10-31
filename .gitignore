@@ -29,5 +29,6 @@ buildroot/x86/.config.old
 buildroot/x86/Makefile
 buildroot/x86/build/
 buildroot/x86/host/
+buildroot/x86/images/
 buildroot/x86/staging
 buildroot/x86/target/
