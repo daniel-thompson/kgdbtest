@@ -1,10 +1,12 @@
 ifeq ("$(ARCH)", "")
 export ARCH=x86
 endif
-
-KERNEL_DIR = $(PWD)
-KCONTEST_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
-export KERNEL_DIR KCONTEST_DIR
+ifeq ("$(notdir $(PWD))", "build-$(ARCH)")
+  export KERNEL_DIR = $(dir $(PWD))
+else
+  export KERNEL_DIR = $(PWD)
+endif
+export KCONTEST_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 test :
 	pytest-3 $(PYTEST_VERBOSE) $(PYTEST_RESTRICT) $(PYTEST_EXTRAFLAGS)
