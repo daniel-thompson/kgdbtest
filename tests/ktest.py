@@ -63,7 +63,7 @@ class ConsoleWrapper(object):
 			self.debug.close()
 		self.console.close()
 
-def qemu(second_uart=False, gdb=False, append=None):
+def qemu(kdb=True, second_uart=False, gdb=False, append=None):
 	'''Create a qemu instance and provide pexpect channels to control it'''
 
 	arch = kbuild.get_arch()
@@ -75,10 +75,11 @@ def qemu(second_uart=False, gdb=False, append=None):
 
 	cmdline = ''
 	cmdline += ' console={}0,115200'.format(tty)
-	if not second_uart:
-		cmdline += ' kgdboc={}0'.format(tty)
-	else:
-		cmdline += ' kgdboc={}1'.format(tty)
+	if kdb:
+		if not second_uart:
+			cmdline += ' kgdboc={}0'.format(tty)
+		else:
+			cmdline += ' kgdboc={}1'.format(tty)
 	if gdb:
 		cmdline += ' nokaslr'
 	if append:

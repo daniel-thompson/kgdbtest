@@ -75,7 +75,8 @@ def config(kgdb=False):
 		run('../scripts/config ' +
 			'--enable DEBUG_INFO ' +
 			'--enable MAGIC_SYSRQ ' +
-			'--enable KGDB --enable KGDB_KDB --enable KDB_KEYBOARD',
+			'--enable KGDB --enable KGDB_TESTS ' +
+                        '--enable KGDB_KDB --enable KDB_KEYBOARD',
 			'Cannot configure kgdb extensions')
 
 	if need_olddefconfig:
