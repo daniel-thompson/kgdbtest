@@ -77,7 +77,21 @@ kernel source directory (without anything "valuable" in the
 current .config) try:
 
 ~~~
-make -C $HOME/Projects/kcontest test
+make -C $HOME/Projects/kcontest
 ~~~
 
-This will scan kcontest for all available tests and run them.
+This will run the default `test` rule, which will scan kcontest for all 
+available tests and run them.
+
+The Makefile behaviour can be made more verbose using `V=1` or `V=2`. At
+level 1 the names of each test case are displayed as the test is run.
+At level 2 all stdio capture is disabled, meaning the pexpect output
+will be displayed live as the test runs.
+
+The set of tests can be restricted using `K=<condition>`. A condition is
+either a sub-string to match in the test name or a python operator. For
+example:
+
+~~~
+make -C $HOME/Projects/kcontest V=2 K='kgdb and smoke'
+~~~
