@@ -78,7 +78,8 @@ def config(kgdb=False):
 			'--enable DEBUG_INFO ' +
 			'--enable MAGIC_SYSRQ ' +
 			'--enable KGDB --enable KGDB_TESTS ' +
-                        '--enable KGDB_KDB --enable KDB_KEYBOARD',
+                        '--enable KGDB_KDB --enable KDB_KEYBOARD ' +
+                        '--enable LKDTM',
 			'Cannot configure kgdb extensions')
 
 	if need_olddefconfig:
