@@ -1,5 +1,10 @@
 ifeq ("$(ARCH)", "")
-export ARCH=x86
+UARCH=$(shell uname -m)
+ifeq ("$(UARCH)", "aarch64")
+  export ARCH=arm64
+else
+  export ARCH=x86
+endif
 endif
 ifeq ("$(notdir $(PWD))", "build-$(ARCH)")
   export KERNEL_DIR = $(dir $(PWD))
