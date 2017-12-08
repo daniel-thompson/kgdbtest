@@ -25,12 +25,10 @@ endif
 
 ifeq ($(PYTEST_VERBOSE),2)
   PYTEST_VERBOSE = -v -s
+else ifeq ($(PYTEST_VERBOSE),1)
+  PYTEST_VERBOSE = -v
 else
-  ifeq ($(PYTEST_VERBOSE),1)
-    PYTEST_VERBOSE = -v
-  else
-    PYTEST_VERBOSE =
-  endif
+  PYTEST_VERBOSE =
 endif
 
 BUILDROOT ?= $(error BUILDROOT is not set)
