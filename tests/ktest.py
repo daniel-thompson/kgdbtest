@@ -18,8 +18,11 @@ def expect_busybox(self):
 	self.expect('OK')
 	self.expect('Welcome to Buildroot')
 	self.expect(['debian-[^ ]* login:', 'buildroot login:'])
-	self.send('root\r')
+	self.sendline('root')
 
+	self.expect_prompt()
+
+	self.sendline('mount -t debugfs none /sys/kernel/debug')
 	self.expect_prompt()
 
 def expect_prompt(self):
