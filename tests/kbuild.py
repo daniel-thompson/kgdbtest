@@ -65,6 +65,8 @@ def config(kgdb=False):
 
 	if 'arm' == arch:
 		defconfig = 'multi_v7_defconfig'
+	elif 'x86' == arch:
+		defconfig = 'x86_64_defconfig'
 	else:
 		defconfig = 'defconfig'
 
