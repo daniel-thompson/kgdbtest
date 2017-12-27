@@ -72,6 +72,7 @@ def test_WARNING(kdb):
 
 	kdb.console.sendline('echo WARNING > /sys/kernel/debug/provoke-crash/DIRECT')
 	kdb.console.expect('WARNING')
-	kdb.console.expect('lkdtm_WARNING')
+	#kdb.console.expect('lkdtm_WARNING')
+	kdb.console.expect('vfs_write')
 	kdb.console.expect_prompt()
 
