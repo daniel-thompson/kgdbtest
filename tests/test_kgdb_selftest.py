@@ -33,7 +33,7 @@ def test_selftest():
 	# is aynschnronous. We solve that just by waiting for all of the
 	# following strings to appear (in any order).
 	choices += [
-		'#',
+		'##INVALID##',
 		'Unregistered I/O driver kgdbts',
 		'Freeing unused kernel memory',
 		'Starting logging',
@@ -49,6 +49,10 @@ def test_selftest():
 		assert choices
 		if 'login:' in choices[choice]:
 			console.sendline('root')
+			# After logging in then the prompt becomes a
+			# valid choice (before that it's too easy to
+			# mis-match)
+			choices[2] = '#'
 		elif '#' in choices[choice]:
 			# Cause a sys_fork (if there are less than 100 forks
 			# during the boot sequence the self test we started at
