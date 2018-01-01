@@ -1,6 +1,9 @@
 import kbuild
 import ktest
+import pytest
 
+@pytest.mark.xfail(condition = (kbuild.get_arch() == 'arm64'),
+		   reason = 'Thread 10 has a PC of 0x0 (to cannot unwind)')
 def test_kgdb():
 	'''High-level kgdb smoke test.
 

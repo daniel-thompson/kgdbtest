@@ -2,6 +2,9 @@ import kbuild
 import ktest
 import pytest
 
+@pytest.mark.xfail(condition = (kbuild.get_arch() == 'arm64'),
+		   reason = 'Unexpected kernel single-step exception at EL1',
+		   run = False)
 def test_selftest():
 	kbuild.config(kgdb=True)
 	kbuild.build()
@@ -9,13 +12,13 @@ def test_selftest():
 	#
 	# From drivers/misc/kgdbts.c:
 	#
-	# When developing a new kgdb arch specific implementation 
-	# or using these tests for the purpose of regression 
+	# When developing a new kgdb arch specific implementation
+	# or using these tests for the purpose of regression
 	# testing, several invocations are required.
 	#
 	# 1) Boot with the test suite enabled by using the kernel arguments
 	#    "kgdbts=V1F100 kgdbwait"
-	# 
+	#
 
 	qemu = ktest.qemu(kdb=False, append='kgdbwait kgdbts=V1F100')
 	console = qemu.console
@@ -82,7 +85,7 @@ def test_selftest():
 	while choice != 2:
 		choice = console.expect(choices)
 		assert choices
-	
+
 	console.expect_prompt()
 
 	#
@@ -162,6 +165,6 @@ def test_selftest():
 	#       support its too risky!
 
 	console.sendline('for i in `seq $n`; do kill %$i; done')
-	console.expect_prompt()	
+	console.expect_prompt()
 
 	qemu.close()
