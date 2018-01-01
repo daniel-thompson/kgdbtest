@@ -23,6 +23,15 @@ def test_selftest():
 	qemu = ktest.qemu(kdb=False, append='kgdbwait kgdbts=V1F100')
 	console = qemu.console
 
+	# Older kernels have no async progress display so for these
+	# kernels we just set a very long timeout (which means failures
+	# will take a long time to report too)
+	v = kbuild.get_version()
+	print(v)
+	if (v[0] <= 4 and v[1] <= 15):
+		console.timeout *= 10
+	print(console.timeout)
+
 	console.expect('Registered I/O driver kgdbts')
 	console.expect('Entering kdb')
 
