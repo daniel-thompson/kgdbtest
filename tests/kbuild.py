@@ -2,6 +2,21 @@ import os
 import traceback
 import sys
 
+def get_version():
+	with open('../Makefile') as f:
+		for ln in f.readlines():
+			if ln.startswith('VERSION'):
+				version = int(ln.split('=')[1].strip())
+			if ln.startswith('PATCHLEVEL'):
+				patchlevel = int(ln.split('=')[1].strip())
+			if ln.startswith('SUBLEVEL'):
+				sublevel = int(ln.split('=')[1].strip())
+			if ln.startswith('EXTRAVERSION'):
+				extraversion = ln.split('=')[1].strip()
+				break
+
+	return (version, patchlevel, sublevel, extraversion)
+
 def get_arch():
 	if 'ARCH' in os.environ:
 		return os.environ['ARCH']
