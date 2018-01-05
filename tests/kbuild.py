@@ -89,6 +89,12 @@ def config(kgdb=False):
 		'Cannot configure kernel (wrong directory)')
 
 	if kgdb:
+		# TODO (v4.17): Needed in linux-next at present
+		#               (and harmless to unaffected kernels)
+		run('../scripts/config ' +
+                        '--enable RUNTIME_TESTING_MENU',
+			'Cannot enable RUNTIME_TESTING_MENU')
+
 		run('../scripts/config ' +
 			'--enable DEBUG_INFO ' +
 			'--enable MAGIC_SYSRQ ' +
