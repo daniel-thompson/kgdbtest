@@ -16,6 +16,13 @@ export KCONTEST_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 test :
 	pytest-3 $(PYTEST_VERBOSE) $(PYTEST_RESTRICT) $(PYTEST_EXTRAFLAGS)
 
+interact :
+ifeq ("$(origin K)", "command line")
+	tests/interact.py $(K)
+else
+	tests/interact.py
+endif
+
 ifeq ("$(origin K)", "command line")
   PYTEST_RESTRICT = -k '$(K)'
 else

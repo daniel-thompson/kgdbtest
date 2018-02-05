@@ -1,4 +1,5 @@
 import kbuild
+import os
 import pexpect
 import sys
 import time
@@ -66,7 +67,7 @@ class ConsoleWrapper(object):
 			self.debug.close()
 		self.console.close()
 
-def qemu(kdb=True, second_uart=False, gdb=False, append=None):
+def qemu(kdb=True, append=None, gdb=False, interactive=True, second_uart=False):
 	'''Create a qemu instance and provide pexpect channels to control it'''
 
 	arch = kbuild.get_arch()
@@ -117,13 +118,29 @@ def qemu(kdb=True, second_uart=False, gdb=False, append=None):
 		cmd += ' -serial chardev:ttyS1'
 	cmd += ' -initrd rootfs.cpio.gz'
 	cmd += ' -append "{}"'.format(cmdline)
-	print('+| ' + cmd)
-	qemu = pexpect.spawn(cmd, encoding='utf-8', logfile=sys.stdout)
 
 	if gdb:
 		gdbcmd = '{}gdb'.format(kbuild.get_cross_compile())
 		gdbcmd += ' vmlinux'
 		gdbcmd += ' -ex "set pagination 0"'
+
+	if interactive:
+		if gdb:
+			gdbcmd += ' -ex "target extended-remote |' + \
+					'socat - UNIX:ttyS1.sock"'
+			gdbcmd = "gnome-terminal -- /bin/sh -c 'sleep 2; " + \
+					gdbcmd + "'"
+			print('+| ' + gdbcmd)
+			os.system(gdbcmd)
+
+		print('+| ' + cmd)
+		os.system(cmd)
+		return None
+
+	print('+| ' + cmd)
+	qemu = pexpect.spawn(cmd, encoding='utf-8', logfile=sys.stdout)
+
+	if gdb:
 		print('+| ' + gdbcmd)
 		gdb = pexpect.spawn(gdbcmd,
 				encoding='utf-8', logfile=sys.stdout)
