@@ -67,7 +67,7 @@ def config(kgdb=False):
 	arch = get_arch()
 
 	# HACK: Still trying to come up with a nice way to handle the two
-	#       directories involved (kernel and kcontest). For now we'll
+	#       directories involved (kernel and kgdbtest). For now we'll
 	#       just hack things and rely on the Makefile to set up the
 	#       environment variables we need.
 

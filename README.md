@@ -1,11 +1,11 @@
-kcontest - kernel console tests
+kgdbtest - kernel console tests
 ===============================
 
 Collection of fully automated kernel tests that test aspects of the
 kernel that rely upon having access to a console. In particular this
 allows us to test tools such as kgdb/kdb.
 
-kcontest is free software; you can redistribute it and/or modify
+kgdbtest is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either [version 2 of the
 License](LICENSE.md), or (at your option) any later version.
@@ -39,8 +39,8 @@ sudo apt install -y \
 Buildroot
 ---------
 
-kcontest relies on buildroot filesystems, normally loaded as an
-initramfs. kcontest includes .config files to regenerate the
+kgdbtest relies on buildroot filesystems, normally loaded as an
+initramfs. kgdbtest includes .config files to regenerate the
 filesystem from scratch. The Makefile also has a few convience
 rules to help construct the filesystem.
 
@@ -69,18 +69,18 @@ kcontext.
 Running tests
 -------------
 
-kcontest currently relies upon external environment variables. These are
+kgdbtest currently relies upon external environment variables. These are
 set up automatically by the `Makefile`.
 
-Assuming kcontest is installed in $HOME/Projects/kcontest, then from a 
-kernel source directory (without anything "valuable" in the
-current .config) try:
+Assuming kgdbtest is installed in
+$HOME/Projects/daniel-thompson/kgdbtest, then from a kernel source 
+directory (without anything "valuable" in the current .config) try:
 
 ~~~
-make -C $HOME/Projects/kcontest
+make -C $HOME/Projects/daniel-thompson/kgdbtest
 ~~~
 
-This will run the default `test` rule, which will scan kcontest for all 
+This will run the default `test` rule, which will scan kgdbtest for all 
 available tests and run them.
 
 The Makefile behaviour can be made more verbose using `V=1` or `V=2`. At
@@ -93,5 +93,5 @@ either a sub-string to match in the test name or a python operator. For
 example:
 
 ~~~
-make -C $HOME/Projects/kcontest V=2 K='kgdb and smoke'
+make -C $HOME/Projects/daniel-thompson/kgdbtest V=2 K='kgdb and smoke'
 ~~~
