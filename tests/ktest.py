@@ -67,7 +67,7 @@ class ConsoleWrapper(object):
 			self.debug.close()
 		self.console.close()
 
-def qemu(kdb=True, append=None, gdb=False, interactive=True, second_uart=False):
+def qemu(kdb=True, append=None, gdb=False, interactive=False, second_uart=False):
 	'''Create a qemu instance and provide pexpect channels to control it'''
 
 	arch = kbuild.get_arch()
