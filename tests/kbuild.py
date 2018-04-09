@@ -97,6 +97,7 @@ def config(kgdb=False):
 
 		run('../scripts/config ' +
 			'--enable DEBUG_INFO ' +
+                        '--enable KALLSYMS_ALL ' +
 			'--enable MAGIC_SYSRQ ' +
 			'--enable KGDB --enable KGDB_TESTS ' +
                         '--enable KGDB_KDB --enable KDB_KEYBOARD ' +

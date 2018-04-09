@@ -85,6 +85,15 @@ def test_go(kdb):
 	kdb.console.send('go\r')
 	kdb.console.expect_prompt()
 
+def test_mdr_variable(kdb):
+	kdb.console.enter_kdb()
+	try:
+		kdb.console.send('mdr kgdb_single_step 4\r')
+		assert 0 == kdb.console.expect(['00000000', 'Illegal numeric value'])
+	finally:
+		kdb.console.expect_prompt()
+		kdb.console.exit_kdb()
+
 def test_sr(kdb):
 	kdb.console.enter_kdb()
 	try:
