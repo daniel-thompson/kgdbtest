@@ -83,3 +83,12 @@ def test_info_target(kgdb):
 		gdb.expect_prompt()
 		kgdb.exit_gdb()
 
+def test_print_variable(kgdb):
+	(console, gdb) = kgdb.enter_gdb()
+	try:
+		gdb.sendline('print kgdb_single_step')
+		assert 0 == gdb.expect(['\$[0-9]+ = 0',
+					'Cannot access memory at address'])
+	finally:
+		gdb.expect_prompt()
+		kgdb.exit_gdb()
