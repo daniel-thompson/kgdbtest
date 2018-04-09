@@ -28,7 +28,7 @@ def test_selftest():
 	# will take a long time to report too)
 	v = kbuild.get_version()
 	print(v)
-	if (v[0] <= 4 and v[1] <= 15):
+	if (v[0] <= 4 and v[1] <= 16):
 		console.timeout *= 10
 	print(console.timeout)
 
