@@ -64,10 +64,12 @@ def test_nop(kdb):
 
 def test_help(kdb):
 	kdb.console.enter_kdb()
-	kdb.console.send('help\r')
-	kdb.console.expect('go.*Continue Execution')
-	kdb.console.expect_prompt()
-	kdb.console.exit_kdb()
+	try:
+		kdb.console.send('help\r')
+		kdb.console.expect('go.*Continue Execution')
+	finally:
+		kdb.console.expect_prompt()
+		kdb.console.exit_kdb()
 
 def test_go(kdb):
 	'''
@@ -85,7 +87,9 @@ def test_go(kdb):
 
 def test_sr(kdb):
 	kdb.console.enter_kdb()
-	kdb.console.send('sr h\r')
-	kdb.console.expect('SysRq : HELP.*show-registers')
-	kdb.console.expect_kdb()
-	kdb.console.exit_kdb()
+	try:
+		kdb.console.send('sr h\r')
+		kdb.console.expect('SysRq : HELP.*show-registers')
+	finally:
+		kdb.console.expect_prompt()
+		kdb.console.exit_kdb()

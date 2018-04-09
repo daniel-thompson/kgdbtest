@@ -64,20 +64,22 @@ def test_continue(kgdb):
 
 def test_info_registers(kgdb):
 	(console, gdb) = kgdb.enter_gdb()
-
-	gdb.sendline('info registers')
-	# Without doing architecture specific checks we can only really
-	# look for the PC/IP being inside the kgdb_breakpoint function.
-	gdb.expect('kgdb_breakpoint')
-	gdb.expect_prompt()
-
-	kgdb.exit_gdb()
+	try:
+		gdb.sendline('info registers')
+		# Without doing architecture specific checks we can
+		# only really look for the PC/IP being inside the
+		# kgdb_breakpoint function.
+		gdb.expect('kgdb_breakpoint')
+	finally:
+		gdb.expect_prompt()
+		kgdb.exit_gdb()
 
 def test_info_target(kgdb):
 	(console, gdb) = kgdb.enter_gdb()
+	try:
+		gdb.sendline('info target')
+		gdb.expect('Debugging a target over a serial line')
+	finally:
+		gdb.expect_prompt()
+		kgdb.exit_gdb()
 
-	gdb.sendline('info target')
-	gdb.expect('Debugging a target over a serial line')
-	gdb.expect_prompt()
-
-	kgdb.exit_gdb()
