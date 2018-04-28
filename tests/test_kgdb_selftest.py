@@ -2,9 +2,10 @@ import kbuild
 import ktest
 import pytest
 
-@pytest.mark.xfail(condition = (kbuild.get_arch() == 'arm64'),
-		   reason = 'Unexpected kernel single-step exception at EL1',
-		   run = False)
+@pytest.mark.xfail(condition = (kbuild.get_arch() == 'arm'), run = True,
+		   reason = 'Hangs during concurrency tests')
+@pytest.mark.xfail(condition = (kbuild.get_arch() == 'arm64'), run = True,
+		   reason = 'Unexpected kernel single-step exception at EL1')
 def test_selftest():
 	kbuild.config(kgdb=True)
 	kbuild.build()
@@ -26,11 +27,10 @@ def test_selftest():
 	# Older kernels have no async progress display so for these
 	# kernels we just set a very long timeout (which means failures
 	# will take a long time to report too)
-	v = kbuild.get_version()
-	print(v)
-	if (v[0] <= 4 and v[1] <= 16):
+	if kbuild.get_version() < (4, 17):
 		console.timeout *= 10
-	print(console.timeout)
+		print('Kernel is below v4.17, extended timeout to {}'.format(
+			console.timeout))
 
 	console.expect('Registered I/O driver kgdbts')
 	console.expect('Entering kdb')
