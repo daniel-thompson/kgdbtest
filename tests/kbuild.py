@@ -2,8 +2,9 @@ import os
 import traceback
 import sys
 
-def get_version():
-	with open('../Makefile') as f:
+def get_version(short=False):
+	makefile = os.environ['KERNEL_DIR'] + '/Makefile'
+	with open(makefile) as f:
 		for ln in f.readlines():
 			if ln.startswith('VERSION'):
 				version = int(ln.split('=')[1].strip())
@@ -23,6 +24,14 @@ def get_arch():
 
 	# TODO: Look up host architecture...
 	return 'x86'
+
+def get_kdir():
+	# HACK: Still trying to come up with a nice way to handle the two
+	#       directories involved (kernel and kgdbtest). For now we'll
+	#       just hack things and rely on the kgdbtest Makefile to
+	#       configure the environment variables we need to get
+	#       things right.
+	return os.environ['KERNEL_DIR'] + '/build-{}'.format(get_arch())
 
 def get_cross_compile():
 	if 'CROSS_COMPILE' in os.environ:
@@ -64,20 +73,15 @@ def skip(msg):
 
 def config(kgdb=False):
 	need_olddefconfig=kgdb
-	arch = get_arch()
 
-	# HACK: Still trying to come up with a nice way to handle the two
-	#       directories involved (kernel and kgdbtest). For now we'll
-	#       just hack things and rely on the Makefile to set up the
-	#       environment variables we need.
-
-	kdir = os.environ['KERNEL_DIR'] + '/build-{}'.format(arch)
+	kdir = get_kdir()
 	try:
 		os.mkdir(kdir)
 	except FileExistsError:
 		pass
 	os.chdir(kdir)
 
+	arch = get_arch()
 	if 'arm' == arch:
 		defconfig = 'multi_v7_defconfig'
 	elif 'x86' == arch:
@@ -120,6 +124,6 @@ def build():
 	run('(cd mod-rootfs; find . | cpio -H newc -AoF ../rootfs.cpio)',
 		'Cannot copy kernel modules into rootfs')
 	# Compressing with xz would be expensive, gzip is enough here
-	run('pwd; gzip -f rootfs.cpio',
+	run('gzip -f rootfs.cpio',
 		'Cannot recompress rootfs')
 
