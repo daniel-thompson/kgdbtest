@@ -128,12 +128,8 @@ def qemu(kdb=True, append=None, gdb=False, interactive=False, second_uart=False)
 		if gdb:
 			gdbcmd += ' -ex "target extended-remote |' + \
 					'socat - UNIX:ttyS1.sock"'
-			print ('>>> ' + gdbcmd)
-
-			#gdbcmd = "gnome-terminal -- /bin/sh -c 'sleep 2; " + \
-			#		gdbcmd + "'"
-			#print('+| ' + gdbcmd)
-			#os.system(gdbcmd)
+			print ('\n>>> (cd {}; {})\n'.format(
+					kbuild.get_kdir(), gdbcmd))
 
 		print('+| ' + cmd)
 		os.system(cmd)
