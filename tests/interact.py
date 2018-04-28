@@ -6,21 +6,15 @@ import ktest
 import sys
 
 def main(argv):
-	parser = argparse.ArgumentParser()
-
-	parser.add_argument('--kdb', action='store_true',
-		help='Interact using kdb')
-	parser.add_argument('--kgdb', action='store_true',
-		help='Interact using kgdb (in a seperate xterm)')
-
-	args = parser.parse_args(argv[1:])
-
-	# For now we'll ignore args.kdb (until we have args.kgdb we
-	# don't really care.
+	kgdb = 'kgdb' in argv[1:]
+	nowait = 'nowait' in argv[1:]
 
 	kbuild.config(kgdb=True)
 	kbuild.build()
-	ktest.qemu(interactive=True, gdb=args.kgdb, append='kgdbwait', second_uart=args.kgdb)
+	ktest.qemu(interactive=True,
+		   gdb=kgdb,
+		   append='' if nowait else 'kgdbwait',
+		   second_uart=kgdb)
 
 if __name__ == '__main__':
 	try:
