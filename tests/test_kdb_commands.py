@@ -94,6 +94,23 @@ def test_mdr_variable(kdb):
 		kdb.console.expect_prompt()
 		kdb.console.exit_kdb()
 
+def test_ss(kdb):
+	'''
+	Test the `ss` command.
+
+	Currently this is merely a survival test; we do not check that
+	the PC advances during the step. There's currently too much
+	variability between the architectures to go deeper on this.
+	'''
+	kdb.console.enter_kdb()
+	try:
+		for i in range(32):
+			kdb.console.send('ss\r')
+			kdb.console.expect('Entering kdb')
+			kdb.console.expect_prompt()
+	finally:
+		kdb.console.exit_kdb()
+
 def test_sr(kdb):
 	kdb.console.enter_kdb()
 	try:
