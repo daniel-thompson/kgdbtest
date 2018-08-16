@@ -12,7 +12,9 @@ def expect_boot(self, bootloader=()):
 	self.expect('Calibrating delay loop')
 	self.expect('NET: Registered protocol family 2')
 	self.expect('io scheduler [^ ]* registered .default.')
-	self.expect('Freeing unused kernel memory')
+        # We need a wildcard here because some newer kernels now
+        # "Free unused kernel image memory".
+	self.expect('Freeing unused kernel.*memory')
 
 def expect_busybox(self):
 	self.expect('Starting logging')
