@@ -33,11 +33,18 @@ def get_kdir():
 	#       things right.
 	return os.environ['KERNEL_DIR'] + '/build-{}'.format(get_arch())
 
-def get_cross_compile():
-	if 'CROSS_COMPILE' in os.environ:
-		return os.environ['CROSS_COMPILE']
+def get_cross_compile(tool=''):
+	if tool:
+		cross_tool = 'CROSS_' + tool.upper()
+		if cross_tool in os.environ:
+			return os.environ[cross_tool]
 
-	return ''
+	if 'CROSS_COMPILE' in os.environ:
+		return os.environ['CROSS_COMPILE'] + tool
+
+	return '' + tool
+
+
 
 def run(cmd, failmsg=None):
 	'''Run a command (synchronously) raising an exception on

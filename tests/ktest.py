@@ -122,7 +122,7 @@ def qemu(kdb=True, append=None, gdb=False, interactive=False, second_uart=False)
 	cmd += ' -append "{}"'.format(cmdline)
 
 	if gdb:
-		gdbcmd = '{}gdb'.format(kbuild.get_cross_compile())
+		gdbcmd = kbuild.get_cross_compile('gdb')
 		gdbcmd += ' vmlinux'
 		gdbcmd += ' -ex "set pagination 0"'
 
