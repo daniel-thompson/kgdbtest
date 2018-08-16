@@ -82,6 +82,8 @@ def kdb():
 	bind_methods(console)
 	console.expect_boot()
 	console.expect_busybox()
+	# Now we have booted our expectations should be met quickly
+	console.timeout = 5
 
 	yield qemu
 
