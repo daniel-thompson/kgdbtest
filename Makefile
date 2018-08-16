@@ -47,17 +47,20 @@ BUILDROOT ?= $(error BUILDROOT is not set)
 buildroot-config :
 	(cd $(KCONTEST_DIR)/buildroot/$(ARCH); $(MAKE) -C $(BUILDROOT) O=$$PWD olddefconfig)
 
-# Use buildroot-tidy (rather than clean) so we can keep running tests whilst
-# the rebuild happens
-buildroot : buildroot-tidy
+BUILDROOT_INTERMEDIATES = \
+		$(KCONTEST_DIR)/buildroot/$(ARCH)/build \
+		$(KCONTEST_DIR)/buildroot/$(ARCH)/staging \
+		$(KCONTEST_DIR)/buildroot/$(ARCH)/target
+
+# Remove intermediates, rather than doing a full clean, so we can (mostly)
+# keep running tests whilst the rebuild happens
+buildroot :
+	$(RM) -r $(BUILDROOT_INTERMEDIATES)
 	make -C $(KCONTEST_DIR)/buildroot/$(ARCH)
 
 # This is enough to save disk space (and force a rebuild) but leaves
 # the cross-compilers and root images alone.
 buildroot-tidy :
-	$(RM) -r \
-		$(KCONTEST_DIR)/buildroot/$(ARCH)/build \
-		$(KCONTEST_DIR)/buildroot/$(ARCH)/staging \
-		$(KCONTEST_DIR)/buildroot/$(ARCH)/target
+	$(RM) -r $(BUILDROOT_INTERMEDIATES)
 
 .PHONY : buildroot-config buildroot buildroot-tidy
