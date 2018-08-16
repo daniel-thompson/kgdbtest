@@ -1,6 +1,7 @@
 import kbuild
 import ktest
 import pytest
+import time
 import random
 import string
 from types import MethodType
@@ -203,5 +204,82 @@ def test_inval(kdb):
 		kdb.console.send('ts' + INVALID4 + 'r\r')
 		kdb.console.expect('Unknown.*tsr')
 		kdb.console.expect_prompt()
+	finally:
+		kdb.console.exit_kdb()
+
+def test_pager_line(kdb):
+	'''Test line-by-line pager handling
+
+	This test assumes the output of the help command does not
+	change much between releases (although we deliberately don't
+	use strings on the very last and very first lines to give us
+	a little tolerance of change.'''
+	kdb.console.enter_kdb()
+	try:
+		kdb.console.send('help\r')
+		kdb.console.expect('more>')
+
+		for i in range(4):
+			kdb.console.send('\r')
+			# The pager flushes the input buffer after processing
+			# a character... we must leave time for it to be
+			# processed
+			time.sleep(0.1)
+
+		kdb.console.expect('Switch to new cpu')
+		kdb.console.expect('Enter kgdb mode')
+		# Ensure we didn't produce too much output
+		assert 0 == kdb.console.expect(['more>', 'Single Step'])
+
+		kdb.console.expect_prompt()
+	finally:
+		kdb.console.exit_kdb()
+
+def test_pager_page(kdb):
+	kdb.console.enter_kdb()
+	try:
+		kdb.console.send('help\r')
+		kdb.console.expect('more>')
+
+		kdb.console.send(' ')
+		kdb.console.expect('Enter kgdb mode')
+		# test_pager_search relies on 'Single Step' to detect
+		# failure. If this expectation requires modifying then
+		# test_pager_search may need updating too.
+		kdb.console.expect('Single Step')
+		kdb.console.expect('more>')
+
+		kdb.console.send(' ')
+		kdb.console.expect('Same as dumpall')
+		kdb.console.expect('kdb>')
+	finally:
+		kdb.console.exit_kdb()
+
+@pytest.mark.xfail(reason = 'pager search eats line after match')
+def test_pager_search(kdb):
+	kdb.console.enter_kdb()
+	try:
+		kdb.console.send('help\r')
+		kdb.console.expect('md.*Display Memory Contents')
+		kdb.console.expect('env.*Show environment variables')
+		kdb.console.expect('more>')
+
+		kdb.console.send('/')
+		kdb.console.expect('search>')
+		kdb.console.send('Common\r')
+		assert 0 == kdb.console.expect(['Common kdb debugging',
+						'Single Step'])
+		kdb.console.expect('First line debugging')
+		kdb.console.expect('Same as dumpall')
+	finally:
+		kdb.console.exit_kdb()
+
+def test_grep(kdb):
+	'''Test "piping" through grep'''
+	kdb.console.enter_kdb()
+	try:
+		kdb.console.send('help | grep summary\r')
+		kdb.console.expect('Summarize the system')
+		kdb.console.expect('kdb>')
 	finally:
 		kdb.console.exit_kdb()
