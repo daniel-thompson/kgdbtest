@@ -31,6 +31,9 @@ def expect_busybox(self):
 def expect_prompt(self):
 	self.expect('# ')
 
+def sysrq(self, ch):
+	self.send('echo {} > /proc/sysrq-trigger\r'.format(ch))
+
 def gdb_connect_to_target(self):
 	self.expect_prompt()
 	self.send('target extended-remote | socat - UNIX:ttyS1.sock\r')
@@ -42,9 +45,6 @@ def gdb_expect_prompt(self):
 	self.sendline('printf "force_gdb_sync"')
 	# No newline means the output here will be unique
 	self.expect('force_gdb_sync.gdb. ')
-
-def sysrq(self, ch):
-	self.send('echo {} > /proc/sysrq-trigger\r'.format(ch))
 
 def bind_methods(c, d):
 	# TODO: Can we use introspection to find methods to bind?
