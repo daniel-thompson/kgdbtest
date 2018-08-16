@@ -44,7 +44,7 @@ def gdb_expect_prompt(self):
 	self.expect('[(]gdb[)] ')
 	self.sendline('printf "force_gdb_sync"')
 	# No newline means the output here will be unique
-	self.expect('force_gdb_sync.gdb. ')
+	self.expect('force_gdb_sync[^\r\n]*[(]gdb[)] ')
 
 def bind_methods(c, d):
 	# TODO: Can we use introspection to find methods to bind?
