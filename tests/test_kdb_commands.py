@@ -1,6 +1,8 @@
 import kbuild
 import ktest
 import pytest
+import random
+import string
 from types import MethodType
 
 def enter_kdb(self):
@@ -11,24 +13,44 @@ def enter_kdb(self):
 	self.old_expect_prompt = self.expect_prompt
 	self.expect_prompt = self.expect_kdb
 
-def expect_kdb(self):
+def unique_tag(prefix=''):
+	return prefix + ''.join(
+		    [random.choice(string.ascii_uppercase) for i in range(8)])
+
+def expect_kdb(self, sync=True):
 	'''
 	Manage the pager until we get a kdb prompt (or timeout)
+
+	Set sync to False for test cases that rely upon a "clean" command
+	history.
 	'''
-	while True:
-		if 0 == self.expect(['kdb>', 'more>']):
-			return
-		self.send(' ')
+	if 1 == self.expect(['kdb>', 'more>']):
+		self.send('q')
+		self.expect('kdb>')
+
+	if sync:
+		tag = unique_tag('SYNC_KDB_')
+		self.send(tag + '\r')
+		self.expect('Unknown[^\r\n]*' + tag)
+		self.expect('kdb>')
 
 def exit_kdb(self):
+	# Make sure we break out of the pager (q is enough to break out
+	# but if we're *not* in the pager we need the \r to make the q
+	# harmless
+	self.send('q\r')
+	self.expect('kdb>')
+
+	# Now we have got the prompt back we can exit kdb
 	self.send('go\r')
 	self.expect_prompt = self.old_expect_prompt
 
 	# We should now be running again but whether or not we get a
 	# prompt depends on how the debugger was triggered. This
 	# technique ensures we are fully up to date with the input.
-	self.send('echo "FORCE"_"IO"_"SYNC"\r')
-	self.expect('FORCE_IO_SYNC')
+	tag = unique_tag()
+	self.send('echo "SYNC"_"SHELL"_"{}"\r'.format(tag))
+	self.expect('SYNC_SHELL_{}'.format(tag))
 	self.expect_prompt()
 
 def bind_methods(c):
@@ -48,6 +70,8 @@ def kdb():
 	bind_methods(console)
 	console.expect_boot()
 	console.expect_busybox()
+	# Now we have booted our expectations should be met quickly
+	console.timeout = 5
 
 	yield qemu
 
@@ -67,8 +91,8 @@ def test_help(kdb):
 	try:
 		kdb.console.send('help\r')
 		kdb.console.expect('go.*Continue Execution')
-	finally:
 		kdb.console.expect_prompt()
+	finally:
 		kdb.console.exit_kdb()
 
 def test_go(kdb):
@@ -90,8 +114,8 @@ def test_mdr_variable(kdb):
 	try:
 		kdb.console.send('mdr kgdb_single_step 4\r')
 		assert 0 == kdb.console.expect(['00000000', 'Illegal numeric value'])
-	finally:
 		kdb.console.expect_prompt()
+	finally:
 		kdb.console.exit_kdb()
 
 def test_ss(kdb):
@@ -116,6 +140,6 @@ def test_sr(kdb):
 	try:
 		kdb.console.send('sr h\r')
 		kdb.console.expect('SysRq : HELP.*show-registers')
-	finally:
 		kdb.console.expect_prompt()
+	finally:
 		kdb.console.exit_kdb()
