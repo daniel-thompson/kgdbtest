@@ -69,7 +69,7 @@ class ConsoleWrapper(object):
 			self.debug.close()
 		self.console.close()
 
-def qemu(kdb=True, append=None, gdb=False, interactive=False, second_uart=False):
+def qemu(kdb=True, append=None, gdb=False, gfx=False, interactive=False, second_uart=False):
 	'''Create a qemu instance and provide pexpect channels to control it'''
 
 	arch = kbuild.get_arch()
@@ -80,12 +80,17 @@ def qemu(kdb=True, append=None, gdb=False, interactive=False, second_uart=False)
 		tty = 'ttyS'
 
 	cmdline = ''
+	if gfx:
+		cmdline += ' console=tty0'
 	cmdline += ' console={}0,115200'.format(tty)
 	if kdb:
+		cmdline += ' kgdboc='
+		if gfx:
+			cmdline += 'kms,kbd,'
 		if not second_uart:
-			cmdline += ' kgdboc={}0'.format(tty)
+			cmdline += '{}0'.format(tty)
 		else:
-			cmdline += ' kgdboc={}1'.format(tty)
+			cmdline += '{}1'.format(tty)
 	if gdb:
 		cmdline += ' nokaslr'
 	if append:
@@ -113,7 +118,9 @@ def qemu(kdb=True, append=None, gdb=False, interactive=False, second_uart=False)
 
 	cmd += ' -m 1G'
 	cmd += ' -smp 2'
-	cmd += ' -nographic -monitor none'
+	if not gfx:
+		cmd += ' -nographic'
+	cmd += ' -monitor none'
 	cmd += ' -chardev stdio,id=mon,mux=on,signal=off -serial chardev:mon'
 	if second_uart:
 		cmd += ' -chardev socket,id=ttyS1,path=ttyS1.sock,server,nowait'

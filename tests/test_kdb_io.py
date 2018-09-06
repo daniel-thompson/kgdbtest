@@ -14,8 +14,8 @@ HOME = '\x1b[1~'
 DEL = '\x1b[3~'
 END = '\x1b[4~'
 
-INVALID2  = '\x1b]'
 INVALID3  = '\x1b[]'
+
 INVALID4  = '\x1b[1]'
 
 def unique_tag(prefix=''):
@@ -37,15 +37,16 @@ def expect_kdb(self, sync=True):
 	Set sync to False for test cases that rely upon a "clean" command
 	history.
 	'''
-	if 1 == self.expect(['kdb>', 'more>']):
-		self.send('q')
-		self.expect('kdb>')
-
 	if sync:
+		if 1 == self.expect(['kdb>', 'more>']):
+			self.send('q')
+			self.expect('kdb>')
+	
 		tag = unique_tag('SYNC_KDB_')
 		self.send(tag + '\r')
 		self.expect('Unknown[^\r\n]*' + tag)
-		self.expect('kdb>')
+
+	self.expect('kdb>')
 
 def exit_kdb(self):
 	# Make sure we break out of the pager (q is enough to break out
@@ -83,7 +84,7 @@ def kdb():
 	bind_methods(console)
 	console.expect_boot()
 	console.expect_busybox()
-	# Now we have booted our expectations should be met quickly
+	# Now we have booted our expectations should be me quickly
 	console.timeout = 5
 
 	yield qemu
@@ -193,7 +194,9 @@ def test_inval(kdb):
 	invalid escape sequences are ignored.'''
 	kdb.console.enter_kdb()
 	try:
-		kdb.console.send('zy' + INVALID2 + 'x\r')
+		kdb.console.send('zy\x1bxx\r')
+                # For a two character sequence we pass if Escape x produces
+                # nothing or 'x' (since either is sane)
 		kdb.console.expect('Unknown.*zyx')
 		kdb.console.expect_prompt()
 
@@ -218,7 +221,7 @@ def test_pager_line(kdb):
 	try:
 		kdb.console.send('help\r')
 		kdb.console.expect('more>')
-
+		
 		for i in range(4):
 			kdb.console.send('\r')
 			# The pager flushes the input buffer after processing
@@ -240,7 +243,7 @@ def test_pager_page(kdb):
 	try:
 		kdb.console.send('help\r')
 		kdb.console.expect('more>')
-
+		
 		kdb.console.send(' ')
 		kdb.console.expect('Enter kgdb mode')
 		# test_pager_search relies on 'Single Step' to detect
@@ -283,3 +286,5 @@ def test_grep(kdb):
 		kdb.console.expect('kdb>')
 	finally:
 		kdb.console.exit_kdb()
+
+
