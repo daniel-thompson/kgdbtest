@@ -88,6 +88,9 @@ def config(kgdb=False):
 		pass
 	os.chdir(kdir)
 
+	if 'NOBUILD' in os.environ:
+		return
+
 	arch = get_arch()
 	if 'arm' == arch:
 		defconfig = 'multi_v7_defconfig'
@@ -120,6 +123,9 @@ def config(kgdb=False):
 			'Cannot finalize kernel configuration')
 
 def build():
+	if 'NOBUILD' in os.environ:
+		return
+
 	run('make -s -j `nproc` all',
 		'Cannot compile kernel')
 	run('make -s -j `nproc` modules_install ' +
