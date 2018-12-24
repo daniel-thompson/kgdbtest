@@ -1,6 +1,7 @@
 .*.swp
 .cache/
 .pytest_cache/
+logs/
 rootfs.cpio.xz
 __pycache__/
 
