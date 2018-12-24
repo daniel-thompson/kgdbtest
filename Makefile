@@ -11,7 +11,7 @@ ifeq ("$(notdir $(PWD))", "build-$(ARCH)")
 else
   export KERNEL_DIR = $(PWD)
 endif
-export KCONTEST_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+export KGDBTEST_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 test :
 	pytest-3 $(PYTEST_VERBOSE) $(PYTEST_RESTRICT) $(PYTEST_EXTRAFLAGS)
@@ -43,24 +43,31 @@ else
   PYTEST_VERBOSE =
 endif
 
-BUILDROOT ?= $(error BUILDROOT is not set)
-buildroot-config :
-	(cd $(KCONTEST_DIR)/buildroot/$(ARCH); $(MAKE) -C $(BUILDROOT) O=$$PWD olddefconfig)
+submodule-update :
+	git submodule update --init
 
+BUILDROOT ?= $(KGDBTEST_DIR)/buildroot/tree
 BUILDROOT_INTERMEDIATES = \
-		$(KCONTEST_DIR)/buildroot/$(ARCH)/build \
-		$(KCONTEST_DIR)/buildroot/$(ARCH)/staging \
-		$(KCONTEST_DIR)/buildroot/$(ARCH)/target
+		$(KGDBTEST_DIR)/buildroot/$(ARCH)/build \
+		$(KGDBTEST_DIR)/buildroot/$(ARCH)/staging \
+		$(KGDBTEST_DIR)/buildroot/$(ARCH)/target
+
+buildroot : buildroot-update buildroot-build buildroot-tidy
+
+buildroot-update : submodule-update buildroot-config
+
+buildroot-config :
+	(cd $(KGDBTEST_DIR)/buildroot/$(ARCH); $(MAKE) -C $(BUILDROOT) O=$$PWD olddefconfig)
 
 # Remove intermediates, rather than doing a full clean, so we can (mostly)
 # keep running tests whilst the rebuild happens
-buildroot :
+buildroot-build :
 	$(RM) -r $(BUILDROOT_INTERMEDIATES)
-	make -C $(KCONTEST_DIR)/buildroot/$(ARCH)
+	make -C $(KGDBTEST_DIR)/buildroot/$(ARCH)
 
 # This is enough to save disk space (and force a rebuild) but leaves
 # the cross-compilers and root images alone.
 buildroot-tidy :
 	$(RM) -r $(BUILDROOT_INTERMEDIATES)
 
-.PHONY : buildroot-config buildroot buildroot-tidy
+.PHONY : submodule-update buildroot buildroot-update buildroot-config buildroot-build buildroot-tidy
