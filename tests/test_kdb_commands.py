@@ -89,6 +89,48 @@ def test_nop(kdb):
 	c = kdb.console.enter_kdb()
 	c.exit_kdb()
 
+def test_bta(kdb):
+	'''
+	Test `bta` and its slightly weird nested pager.
+
+	Currently we do not check the quality of the backtrace because
+	it is difficult to do so portably. We simply check that the
+	nested pager is working.
+	'''
+
+	def handle_nested_pager(c):
+		choices = ['cr.* to continue', 'more>', 'kdb>']
+
+		choice = c.expect(choices)
+		while choice == 1:
+			c.send(' ')
+			choice = c.expect(choices)
+
+		assert choice == 0
+
+	c = kdb.console.enter_kdb()
+
+	try:
+		# Run a bta command and wait for a btaprompt
+		c.send('bta\r')
+		handle_nested_pager(c)
+
+		# Continue with <cr>
+		c.send('\r')
+		handle_nested_pager(c)
+
+		# Continue with a <space>
+		c.send(' ')
+		handle_nested_pager(c)
+
+		# Bust out. We do not use expect_prompt here because we
+		# are also testing that we *don't* see a more> prompt.
+		c.send('q')
+		c.expect('kdb>')
+
+	finally:
+		c.exit_kdb()
+
 def test_help(kdb):
 	c = kdb.console.enter_kdb()
 	try:
