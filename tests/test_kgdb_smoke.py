@@ -24,8 +24,7 @@ def test_kgdb():
 
 	gdb.send('where\r')
 	gdb.expect('kgdb_initial_breakpoint')
-	gdb.expect('do_one_initcall')
-	gdb.expect('ret_from_fork')
+	gdb.expect('init_kgdboc')
 	gdb.expect_prompt()
 
 	gdb.send('break do_sys_open\r')
