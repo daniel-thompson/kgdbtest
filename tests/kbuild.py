@@ -131,7 +131,7 @@ def build():
 	run('make -s -j `nproc` modules_install ' +
 		'INSTALL_MOD_PATH=$PWD/mod-rootfs INSTALL_MOD_STRIP=1',
 		'Cannot install kernel modules')
-	run('unxz -c $KCONTEST_DIR/buildroot/{}/images/rootfs.cpio.xz > rootfs.cpio'
+	run('unxz -c $KGDBTEST_DIR/buildroot/{}/images/rootfs.cpio.xz > rootfs.cpio'
 			.format(get_arch()),
 		'Cannot decompress rootfs')
 	run('(cd mod-rootfs; find . | cpio -H newc -AoF ../rootfs.cpio)',
