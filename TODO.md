@@ -1,12 +1,6 @@
 TODO
 ====
 
- * Add support for additional architectures
-   - ARCH=arm64
- * Automatically build and install a kernel module to make it easier to
-   stimulate specific kernel behaviours
-   - BUG()
-   - WARN()
  * Improve test coverage
    - Exercise every kdb command at least once
    - kdb/ftrace
@@ -16,4 +10,7 @@ TODO
    - parameterize kgdb smoke test to cover kernels built with and
      without kdb support.
    - kgdb entry on panic()
- * Provide Makefile rules to automatically create rootfs.cpio.xz .
+ * Split self tests into boot test and split out the different test
+   cases
+ * Modify boot message parsing to be table based (so if a message is
+   missing we don't get stuck)
