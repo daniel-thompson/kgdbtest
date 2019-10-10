@@ -37,7 +37,7 @@ def test_kgdbts_boot():
 
 	# Check that the self test starts to run. The failure detect
 	# relies on all error paths calling WARN_ON().
-	choices = ['WARNING.*kgdbts\.c', 'kgdbts:RUN']
+	choices = ['WARNING.*kgdbts[.]c', 'kgdbts:RUN']
 	choice = console.expect(choices)
 	assert choice
 

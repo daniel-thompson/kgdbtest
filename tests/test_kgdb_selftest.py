@@ -38,7 +38,7 @@ def test_kgdbts_V1(kernel):
 	kernel.console.sendline('echo kgdbts=V1 > /sys/module/kgdbts/parameters/kgdbts')
 	choice = kernel.console.expect(['ERROR', 'Registered I/O driver kgdbts'])
 	assert choice
-	choices = [ 'WARNING.*kgdbts\.c', 'kgdbts:RUN',
+	choices = [ 'WARNING.*kgdbts[.]c', 'kgdbts:RUN',
 			'Unregistered I/O driver kgdbts']
 	choice = 0
 	while choice != 2:
@@ -81,7 +81,7 @@ def test_kgdbts_V1S10000(kernel):
 	choice = kernel.console.expect(['ERROR', 'Registered I/O driver kgdbts'])
 	assert choice
 
-	choices = [ 'WARNING.*kgdbts\.c', 'kgdbts:RUN',
+	choices = [ 'WARNING.*kgdbts[.]c', 'kgdbts:RUN',
 			'Unregistered I/O driver kgdbts']
 	choice = 0
 	while choice != 2:
@@ -123,7 +123,7 @@ def test_kgdbts_V1F1000(kernel):
 	choice = kernel.console.expect(['ERROR', 'Registered I/O driver kgdbts'])
 	assert choice
 
-	choices = [ 'WARNING.*kgdbts\.c', 'kgdbts:RUN',
+	choices = [ 'WARNING.*kgdbts[.]c', 'kgdbts:RUN',
 			'Unregistered I/O driver kgdbts']
 	choice = 0
 	while choice != 2:
