@@ -228,4 +228,47 @@ def test_grep(kdb):
 	finally:
 		kdb.console.exit_kdb()
 
+def test_tab_complete(kdb):
+	'''Test tab completion as with hone in on a symbol.'''
+	c = kdb.console.enter_kdb()
+	try:
+		c.send('kdb_r\t\t')
+		c.expect('kdb_register.*kdb_reboot')
+		c.expect_prompt(sync=False)
 
+		c.send('\bu\t')
+		c.expect('register')
+
+		c.send('\t')
+		c.expect('kdb_unregister')
+		c.expect_prompt(sync=False)
+		c.expect('kdb_unregister')
+
+		c.send(' kdb_reb\t')
+		c.expect('kdb_reboot')
+
+		c.send('\r')
+		c.expect_prompt()
+	finally:
+		c.exit_kdb()
+
+def test_tab_search(kdb):
+	'''Test tab completion when there are too many symbols to display'''
+	c = kdb.console.enter_kdb()
+	try:
+		c.send('\t\t')
+		c.expect('symbols are found.*only first.*symbols will be printed.')
+		c.expect_prompt(sync=False)
+
+		c.send('p\t\t')
+		c.expect('symbols are found.*only first.*symbols will be printed.')
+		c.expect_prompt(sync=False)
+
+		c.send(' q r s t\t\t')
+		c.expect('symbols are found.*only first.*symbols will be printed.')
+		c.expect_prompt(sync=False)
+
+		c.send('\r')
+		c.expect_prompt()
+	finally:
+		c.exit_kdb()
