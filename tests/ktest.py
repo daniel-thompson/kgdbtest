@@ -11,8 +11,7 @@ def expect_boot(self, bootloader=()):
 	self.expect('Linux version.*$')
 	self.expect('Calibrating delay loop')
 	self.expect('NET: Registered protocol family 2')
-	self.expect('io scheduler [^ ]* registered .default.')
-        # We need a wildcard here because some newer kernels now
+        # We need a wildcard here because some newer kernels now say:
         # "Free unused kernel image memory".
 	self.expect('Freeing unused kernel.*memory')
 
