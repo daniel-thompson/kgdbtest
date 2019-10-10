@@ -2,9 +2,6 @@ import kbuild
 import ktest
 import pytest
 import time
-import random
-import string
-from types import MethodType
 
 UP = '\x1b[A'
 DOWN = '\x1b[B'
@@ -18,61 +15,6 @@ INVALID3  = '\x1b[]'
 
 INVALID4  = '\x1b[1]'
 
-def unique_tag(prefix=''):
-	return prefix + ''.join(
-		    [random.choice(string.ascii_uppercase) for i in range(8)])
-
-def enter_kdb(self):
-	self.sysrq('g')
-	self.expect('Entering kdb')
-	self.expect_kdb()
-
-	self.old_expect_prompt = self.expect_prompt
-	self.expect_prompt = self.expect_kdb
-
-def expect_kdb(self, sync=True):
-	'''
-	Manage the pager until we get a kdb prompt (or timeout)
-
-	Set sync to False for test cases that rely upon a "clean" command
-	history.
-	'''
-	if sync:
-		if 1 == self.expect(['kdb>', 'more>']):
-			self.send('q')
-			self.expect('kdb>')
-	
-		tag = unique_tag('SYNC_KDB_')
-		self.send(tag + '\r')
-		self.expect('Unknown[^\r\n]*' + tag)
-
-	self.expect('kdb>')
-
-def exit_kdb(self):
-	# Make sure we break out of the pager (q is enough to break out
-	# but if we're *not* in the pager we need the \r to make the q
-	# harmless
-	self.send('q\r')
-	self.expect('kdb>')
-
-	# Now we have got the prompt back we can exit kdb
-	self.send('go\r')
-	self.expect_prompt = self.old_expect_prompt
-
-	# We should now be running again but whether or not we get a
-	# prompt depends on how the debugger was triggered. This
-	# technique ensures we are fully up to date with the input.
-	tag = unique_tag()
-	self.send('echo "SYNC"_"SHELL"_"{}"\r'.format(tag))
-	self.expect('SYNC_SHELL_{}'.format(tag))
-	self.expect_prompt()
-
-def bind_methods(c):
-	# TODO: Can we use introspection to find methods to bind?
-	c.enter_kdb = MethodType(enter_kdb, c)
-	c.expect_kdb = MethodType(expect_kdb, c)
-	c.exit_kdb = MethodType(exit_kdb, c)
-
 @pytest.fixture(scope="module")
 def kdb():
 	kbuild.config(kgdb=True)
@@ -81,10 +23,9 @@ def kdb():
 	qemu = ktest.qemu()
 
 	console = qemu.console
-	bind_methods(console)
 	console.expect_boot()
 	console.expect_busybox()
-	# Now we have booted our expectations should be me quickly
+	# Now we have booted our expectations should be met quickly
 	console.timeout = 5
 
 	yield qemu

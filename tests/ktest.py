@@ -1,9 +1,22 @@
 import kbuild
 import os
 import pexpect
+import random
+import string
 import sys
 import time
 from types import MethodType
+
+def unique_tag(prefix=''):
+	"""
+	Generate an short string that can be used to synchronize the prompt.
+
+	When we expect a prompt there is a risk we will match a previously issued
+	prompt. By forcing a unique(ish) tag to appear in the output we can
+	guarantee that we matched the more recently issued prompt.
+	"""
+	return prefix + ''.join(
+		    [random.choice(string.ascii_uppercase) for i in range(8)])
 
 def expect_boot(self, bootloader=()):
 	for msg in bootloader:
@@ -31,7 +44,77 @@ def expect_prompt(self):
 	self.expect('# ')
 
 def sysrq(self, ch):
+	"""
+	Use the shell to run a sysrq command
+	"""
 	self.send('echo {} > /proc/sysrq-trigger\r'.format(ch))
+
+def expect_kdb(self, sync=True):
+	"""
+	Manage the pager until we get a kdb prompt (or timeout)
+
+	It is not usually necessary to call this method directly. When kdb
+	is active the methods to enter/exit kdb will replace expect_prompt()
+	with this function. This allows test cases to wait for a prompt
+	regardless of whether the command interpretter is a shell or kdb.
+
+	Set sync to False for test cases that rely upon a "clean" command
+	history and will not trigger the pager. This is useful for testing
+	command history and escape sequence handling.
+	"""
+	if sync:
+		if 1 == self.expect(['kdb>', 'more>']):
+			self.send('q')
+			self.expect('kdb>')
+
+		tag = unique_tag('SYNC_KDB_')
+		self.send(tag + '\r')
+		self.expect('Unknown[^\r\n]*' + tag)
+
+	self.expect('kdb>')
+
+def enter_kdb(self):
+	"""
+	Trigger the debugger and wait for the kdb prompt.
+
+	Once we see the prompt we update expect_prompt() accordingly.
+	"""
+	self.sysrq('g')
+	self.expect('Entering kdb')
+	self.expect_kdb()
+
+	self.old_expect_prompt = self.expect_prompt
+	self.expect_prompt = self.expect_kdb
+
+	# Allow chaining...
+	return self
+
+def exit_kdb(self):
+	"""
+	Revert to normal running.
+
+	This function is intended to be called from a finally: clause
+	meaning the current state of the command interpreter and pager
+	is unknown. We do our best to robustly recover in order to
+	minimise the risk of cascaded failures.
+	"""
+	# Make sure we break out of the pager (q is enough to break out
+	# but if we're *not* in the pager we need the \r to make the q
+	# harmless
+	self.send('q\r')
+	self.expect('kdb>')
+
+	# Now we have got the prompt back we can exit kdb
+	self.send('go\r')
+	self.expect_prompt = self.old_expect_prompt
+
+	# We should now be running again but whether or not we get a
+	# prompt depends on how the debugger was triggered. This
+	# technique ensures we are fully up to date with the input.
+	tag = unique_tag()
+	self.send('echo "SYNC"_"SHELL"_"{}"\r'.format(tag))
+	self.expect('SYNC_SHELL_{}'.format(tag))
+	self.expect_prompt()
 
 def gdb_connect_to_target(self):
 	self.expect_prompt()
@@ -51,6 +134,9 @@ def bind_methods(c, d):
 	c.expect_busybox = MethodType(expect_busybox, c)
 	c.expect_prompt = MethodType(expect_prompt, c)
 	c.sysrq = MethodType(sysrq, c)
+	c.enter_kdb = MethodType(enter_kdb, c)
+	c.expect_kdb = MethodType(expect_kdb, c)
+	c.exit_kdb = MethodType(exit_kdb, c)
 
 	if d:
 		d.connect_to_target = MethodType(gdb_connect_to_target, d)
