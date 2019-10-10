@@ -236,10 +236,10 @@ def test_ss(kdb):
 		kdb.console.exit_kdb()
 
 def test_sr(kdb):
-	kdb.console.enter_kdb()
+	c = kdb.console.enter_kdb()
 	try:
-		kdb.console.send('sr h\r')
-		kdb.console.expect('[sS]ys[rR]q : HELP.*show-registers')
-		kdb.console.expect_prompt()
+		c.send('sr h\r')
+		c.expect('[sS]ys[rR]q.*HELP.*show-registers')
+		c.expect_prompt()
 	finally:
-		kdb.console.exit_kdb()
+		c.exit_kdb()
