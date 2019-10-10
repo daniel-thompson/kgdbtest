@@ -5,6 +5,7 @@ import random
 import string
 import sys
 import time
+import warnings
 from types import MethodType
 
 def unique_tag(prefix=''):
@@ -98,15 +99,19 @@ def exit_kdb(self):
 	is unknown. We do our best to robustly recover in order to
 	minimise the risk of cascaded failures.
 	"""
-	# Make sure we break out of the pager (q is enough to break out
-	# but if we're *not* in the pager we need the \r to make the q
-	# harmless
-	self.send('q\r')
-	self.expect('kdb>')
+	if self.expect_prompt == self.expect_kdb:
+		# Make sure we break out of the pager (q is enough to break out
+		# but if we're *not* in the pager we need the \r to make the q
+		# harmless
+		self.send('q\r')
+		self.expect('kdb>')
 
-	# Now we have got the prompt back we can exit kdb
-	self.send('go\r')
-	self.expect_prompt = self.old_expect_prompt
+		# Now we have got the prompt back we can exit kdb
+		self.send('go\r')
+		self.expect_prompt = self.old_expect_prompt
+	else:
+		warnings.warn(UserWarning("Cannot exit from kdb (already exited?)"))
+		# If we're not running in kdb its reasonable to look for a shell prompt
 
 	# We should now be running again but whether or not we get a
 	# prompt depends on how the debugger was triggered. This

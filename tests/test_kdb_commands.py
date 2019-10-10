@@ -70,6 +70,40 @@ def test_bta(kdb):
 	finally:
 		c.exit_kdb()
 
+def test_btc(kdb):
+	'''
+	Test `btc` (backtrace on all cpus)
+
+        This is a simple survival test.
+	'''
+	c = kdb.console
+	try:
+		# Generate some load
+		c.send('dd if=/dev/urandom of=/dev/null bs=65536 &' * 2 + '\r')
+		c.expect_prompt()
+
+		# stop/btc/start
+		for i in range(16):
+			c.enter_kdb()
+
+			c.send('btc | grep traceback\r')
+
+			choices = ['kdb>', 'traceback']
+			choice = c.expect(choices)
+			while 1 == choice:
+				choice = c.expect(choices)
+			assert choice == 0
+
+			c.exit_kdb()
+
+	finally:
+		c.exit_kdb()
+		c.send('kill %1\r')
+		c.expect_prompt()
+		c.send('kill %2\r')
+		c.expect_prompt()
+
+
 def test_help(kdb):
 	c = kdb.console.enter_kdb()
 	try:
