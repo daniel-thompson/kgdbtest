@@ -258,7 +258,7 @@ def test_sr(kdb):
 	kdb.console.enter_kdb()
 	try:
 		kdb.console.send('sr h\r')
-		kdb.console.expect('SysRq : HELP.*show-registers')
+		kdb.console.expect('[sS]ys[rR]q : HELP.*show-registers')
 		kdb.console.expect_prompt()
 	finally:
 		kdb.console.exit_kdb()
