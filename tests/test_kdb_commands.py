@@ -13,6 +13,9 @@ def enter_kdb(self):
 	self.old_expect_prompt = self.expect_prompt
 	self.expect_prompt = self.expect_kdb
 
+	# Allow chaining...
+	return self
+
 def unique_tag(prefix=''):
 	return prefix + ''.join(
 		    [random.choice(string.ascii_uppercase) for i in range(8)])
@@ -83,17 +86,17 @@ def test_nop(kdb):
 
 	Check that the basic console management is working OK.
 	'''
-	kdb.console.enter_kdb()
-	kdb.console.exit_kdb()
+	c = kdb.console.enter_kdb()
+	c.exit_kdb()
 
 def test_help(kdb):
-	kdb.console.enter_kdb()
+	c = kdb.console.enter_kdb()
 	try:
-		kdb.console.send('help\r')
-		kdb.console.expect('go.*Continue Execution')
-		kdb.console.expect_prompt()
+		c.send('help\r')
+		c.expect('go.*Continue Execution')
+		c.expect_prompt()
 	finally:
-		kdb.console.exit_kdb()
+		c.exit_kdb()
 
 def test_go(kdb):
 	'''
