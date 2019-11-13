@@ -25,6 +25,16 @@ buildroot/arm64/images/
 buildroot/arm64/staging
 buildroot/arm64/target/
 
+buildroot/mips/..config.tmp
+buildroot/mips/.br-external.mk
+buildroot/mips/.config.old
+buildroot/mips/Makefile
+buildroot/mips/build/
+buildroot/mips/host/
+buildroot/mips/images/
+buildroot/mips/staging
+buildroot/mips/target/
+
 buildroot/x86/..config.tmp
 buildroot/x86/.br-external.mk
 buildroot/x86/.config.old

@@ -192,22 +192,31 @@ def qemu(kdb=True, append=None, gdb=False, gfx=False, interactive=False, second_
 		cmd = 'qemu-system-arm'
 		cmd += ' -accel tcg,thread=multi '
 		cmd += ' -M vexpress-a15 -cpu cortex-a15'
+		cmd += ' -m 1G -smp 2'
 		cmd += ' -kernel arch/arm/boot/zImage'
 		cmd += ' -dtb arch/arm/boot/dts/vexpress-v2p-ca15-tc1.dtb'
 	elif arch == 'arm64':
 		cmd = 'qemu-system-aarch64'
 		cmd += ' -accel tcg,thread=multi '
 		cmd += ' -M virt,gic_version=3 -cpu cortex-a57'
+		cmd += ' -m 1G -smp 2'
 		cmd += ' -kernel arch/arm64/boot/Image'
+	elif arch == 'mips':
+		cmd = 'qemu-system-mipsel'
+		cmd += ' -accel tcg,thread=multi '
+		cmd += ' -M malta'
+		# TODO: Does MIPS have a defconfig that boots SMP qemu systems?
+		cmd += ' -m 1G'
+		cmd += ' -kernel vmlinux'
+
 	elif arch == 'x86':
 		cmd = 'qemu-system-x86_64'
 		cmd += ' -enable-kvm'
+		cmd += ' -m 1G -smp 2'
 		cmd += ' -kernel arch/x86/boot/bzImage'
 	else:
 		assert False
 
-	cmd += ' -m 1G'
-	cmd += ' -smp 2'
 	if not gfx:
 		cmd += ' -nographic'
 	cmd += ' -monitor none'

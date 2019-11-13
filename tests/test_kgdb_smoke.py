@@ -35,6 +35,11 @@ def test_kgdb():
 	gdb.expect_prompt()
 
 	gdb.send('info registers\r')
+	# If the PC is not automatically shown symbolically in a
+	# register dump then we must look it up explicitly.
+	if kbuild.get_arch() in ('mips',):
+		gdb.expect_prompt()
+		gdb.send('info symbol $pc\r')
 	gdb.expect('do_sys_open')
 	gdb.expect_prompt()
 
@@ -46,7 +51,7 @@ def test_kgdb():
 	gdb.expect_prompt()
 	gdb.send('where\r')
 	gdb.expect('kthread')
-	gdb.expect('ret_from_fork')
+	gdb.expect(['ret_from_fork', 'ret_from_kernel_thread'])
 	gdb.expect_prompt()
 
 	gdb.send('delete 1\r')

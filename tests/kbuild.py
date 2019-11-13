@@ -94,6 +94,8 @@ def config(kgdb=False):
 	arch = get_arch()
 	if 'arm' == arch:
 		defconfig = 'multi_v7_defconfig'
+	elif 'mips' == arch:
+		defconfig = 'malta_kvm_guest_defconfig'
 	elif 'x86' == arch:
 		defconfig = 'x86_64_defconfig'
 	else:
@@ -111,6 +113,7 @@ def config(kgdb=False):
 
 		run('../scripts/config ' +
 			'--enable DEBUG_INFO ' +
+			'--enable DEBUG_FS ' +
                         '--enable KALLSYMS_ALL ' +
 			'--enable MAGIC_SYSRQ ' +
 			'--enable KGDB --enable KGDB_TESTS ' +

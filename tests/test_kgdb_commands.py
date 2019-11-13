@@ -68,8 +68,11 @@ def test_info_registers(kgdb):
 		gdb.sendline('info registers')
 		# Without doing architecture specific checks we can
 		# only really look for the PC/IP being inside the
-		# kgdb_breakpoint function.
-		gdb.expect('kgdb_breakpoint')
+		# kgdb_breakpoint function (and even that doesn't work
+		# for architectures where the PC doesn't get shown
+		# symbolically).
+		if kbuild.get_arch() not in ('mips',):
+			gdb.expect('kgdb_breakpoint')
 	finally:
 		gdb.expect_prompt()
 		kgdb.exit_gdb()

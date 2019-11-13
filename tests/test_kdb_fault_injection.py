@@ -17,9 +17,10 @@ def kdb():
 
 	qemu.close()
 
+@pytest.mark.xfail(condition = (kbuild.get_arch() == 'mips'),
+                   reason = "Triggers breakpoint twice", run = False)
 @pytest.mark.xfail(condition = (kbuild.get_arch() == 'x86'),
-                   reason = "Triggers breakpoint twice",
-                   run = False)
+                   reason = "Triggers breakpoint twice", run = False)
 def test_BUG(kdb):
 	'''
 	Test how kdb reacts to a BUG()
@@ -43,9 +44,10 @@ def test_BUG(kdb):
 	kdb.console.send('go\r')
 	kdb.console.expect_prompt()
 
+@pytest.mark.xfail(condition = (kbuild.get_arch() == 'mips'),
+                   reason = "Triggers breakpoint twice", run = False)
 @pytest.mark.xfail(condition = (kbuild.get_arch() == 'x86'),
-                   reason = "Triggers breakpoint twice",
-                   run = False)
+                   reason = "Triggers breakpoint twice", run = False)
 def test_BUG_again(kdb):
 	'''
 	Repeat the BUG() test.
