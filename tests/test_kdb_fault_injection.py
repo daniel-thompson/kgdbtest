@@ -58,7 +58,7 @@ def test_BUG_again(kdb):
 
 def test_WARNING(kdb):
 	'''
-	Test how kdb reacts to a WARN_ON()
+	Test that kdb does *not* enter during a WARN_ON()
 	'''
 
 	kdb.console.sendline('echo WARNING > /sys/kernel/debug/provoke-crash/DIRECT')
