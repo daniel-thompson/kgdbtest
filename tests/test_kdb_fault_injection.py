@@ -1,20 +1,6 @@
 import kbuild
 import ktest
 import pytest
-from types import MethodType
-
-def expect_kdb(self):
-	'''
-	Manage the pager until we get a kdb prompt (or timeout)
-	'''
-	while True:
-		if 0 == self.expect(['kdb>', 'more>']):
-			return
-		self.send(' ')
-
-def bind_methods(c):
-	# TODO: Can we use introspection to find methods to bind?
-	c.expect_kdb = MethodType(expect_kdb, c)
 
 @pytest.fixture(scope="module")
 def kdb():
@@ -24,7 +10,6 @@ def kdb():
 	qemu = ktest.qemu()
 
 	console = qemu.console
-	bind_methods(console)
 	console.expect_boot()
 	console.expect_busybox()
 
