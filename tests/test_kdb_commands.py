@@ -82,9 +82,10 @@ def test_btc(kdb):
 		c.send('dd if=/dev/urandom of=/dev/null bs=65536 &' * 2 + '\r')
 		c.expect_prompt()
 
-		# stop/btc/start
+		c.enter_kdb()
+
+		# btc/start/stop
 		for i in range(16):
-			c.enter_kdb()
 
 			c.send('btc | grep traceback\r')
 
@@ -94,7 +95,10 @@ def test_btc(kdb):
 				choice = c.expect(choices)
 			assert choice == 0
 
+			# Let userspace run for a moment
 			c.exit_kdb()
+			c.enter_kdb()
+
 
 	finally:
 		c.exit_kdb()
