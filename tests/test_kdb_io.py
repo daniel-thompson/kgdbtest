@@ -232,8 +232,12 @@ def test_tab_complete(kdb):
 	'''Test tab completion as with hone in on a symbol.'''
 	c = kdb.console.enter_kdb()
 	try:
+		symbols = [ 'kdb_reboot ', 'kdb_rd ',
+                            'kdb_register ', 'kdb_register_flags ' ]
 		c.send('kdb_r\t\t')
-		c.expect('kdb_register.*kdb_reboot')
+		while symbols:
+			i = c.expect(symbols)
+			del symbols[i]
 		c.expect_prompt(sync=False)
 
 		c.send('\bu\t')
