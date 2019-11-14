@@ -119,6 +119,41 @@ example:
 make -C $KGDBTESTDIR V=2 K='kgdb and smoke'
 ~~~
 
+git bisect
+----------
+
+By default kgdbtest will automatically configure and build the kernel
+under test. This can be problematic for running automated git bisection
+(`git bisect run`) because git cannot easily distinguish between an
+untestable kernel revision and a failed test.
+
+There are multiple ways to work around this but one simple approach is
+to run the test suite twice, one with a "smoke test" job and the other
+to run real tests. If the smoke test fails we can return an error
+code that causes the bisection to skip the selected version (without
+marking it good or bad).
+
+For example the following simple wrapper script allows kgdbtest to be
+used to manage a bisect.
+
+~~~ sh
+#
+# kgdbtest-wrapper.sh
+#
+# Help run kgdbtest from git bisect run. For example:
+#
+#   git bisect run kgdbtest-wrapper.sh K='kdb and tab_complete' V=2
+#
+
+# Run a basic nop test... skip this revision if this fails
+make -C ../kgdbtest "$@" K='kdb and nop'
+[ 0 -ne $? ] && exit 125
+
+# Now run the test that was requested
+make -C ../kgdbtest "$@"
+[ 0 -ne $? ] && exit 1
+~~~
+
 Interacting with the kernel debugger
 ------------------------------------
 
