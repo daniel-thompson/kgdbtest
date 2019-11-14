@@ -47,6 +47,7 @@ rules to help construct the filesystem.
 ~~~
 ARCH=arm make buildroot
 ARCH=arm64 make buildroot
+ARCH=mips make buildroot
 ARCH=x86 make buildroot
 ~~~
 
@@ -66,6 +67,26 @@ rules directly from the build directory:
 
 ~~~
 make -C buildroot/arm64 menuconfig
+~~~
+
+Choosing a cross-toolset
+------------------------
+
+kgdbtest does not impose any additional requirements beyond the
+normal kbuild toolset discovery variables such as `ARCH` and
+`CROSS_COMPILE`.
+
+In general you should use whatever toolset you usually use for kernel
+builds as the basis for any kgdb testing that you undertake.
+
+If you are working on an architecture for which you do not have a
+cross-compiler already installed then the buildroot tools for that
+architecture can be used. For example:
+
+~~~
+ARCH=arm
+CROSS_COMPILE=$PWD/buildroot/arm/host/bin/arm-linux-
+export ARCH CROSS_COMPILE
 ~~~
 
 Running tests
