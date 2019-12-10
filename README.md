@@ -176,8 +176,8 @@ make -C $KGDBTESTDIR interact K=kgdb
 This will launch the kernel (which will stop and wait for connection
 from remote gdb). In the scroll back buffer you should find a canned
 gdb command to run from another terminal. For example, for an arm64
-kernel the canned command will look like (and can easily be search for
-by the `>>> ` prefix:
+kernel the canned command will look like (and can easily be found by
+searching for the `>>> ` prefix:
 
 ~~~
 ...
