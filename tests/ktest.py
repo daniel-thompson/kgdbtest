@@ -30,8 +30,7 @@ def expect_boot(self, bootloader=()):
 	self.expect('Freeing unused kernel.*memory')
 
 def expect_busybox(self):
-	self.expect('Starting logging')
-	self.expect('OK')
+	self.expect('Starting .*: OK')
 	self.expect('Welcome to Buildroot')
 	self.expect(['debian-[^ ]* login:', 'buildroot login:'])
 	self.sendline('root')
