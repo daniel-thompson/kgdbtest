@@ -40,7 +40,17 @@ def expect_busybox(self):
 	self.sendline('mount -t debugfs none /sys/kernel/debug')
 	self.expect_prompt()
 
-def expect_prompt(self):
+def expect_prompt(self, sync=True):
+	if sync:
+		self.expect('# ')
+
+		tag = unique_tag('SYNC_SHELL_')
+		# The SYNC_SHELL_ABCD"EFGH" quoting ensures we can only match
+		# the output of the echo command (e.g. we never acidentally
+		# match a local character echo).
+		self.send(f'echo {tag[:-4]}"{tag[-4:]}"\r')
+		self.expect(tag)
+
 	self.expect('# ')
 
 def sysrq(self, ch):
