@@ -46,7 +46,7 @@ def expect_prompt(self, sync=True):
 
 		tag = unique_tag('SYNC_SHELL_')
 		# The SYNC_SHELL_ABCD"EFGH" quoting ensures we can only match
-		# the output of the echo command (e.g. we never acidentally
+		# the output of the echo command (e.g. we never accidentally
 		# match a local character echo).
 		self.send(f'echo {tag[:-4]}"{tag[-4:]}"\r')
 		self.expect(tag)
@@ -138,9 +138,13 @@ def gdb_connect_to_target(self):
 
 def gdb_expect_prompt(self):
 	self.expect('[(]gdb[)] ')
-	self.sendline('printf "force_gdb_sync"')
-	# No newline means the output here will be unique
-	self.expect('force_gdb_sync[^\r\n]*[(]gdb[)] ')
+
+	tag = unique_tag('SYNC_GDB_')
+	# This printf has no newline which means the next gdb prompt will be
+	# on the same line as the tag thus we do not match local character echo
+	# by mistake.
+	self.sendline(f'printf "{tag}"')
+	self.expect(f'{tag}[^\r\n]*[(]gdb[)] ')
 
 def bind_methods(c, d):
 	# TODO: Can we use introspection to find methods to bind?
