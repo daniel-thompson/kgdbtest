@@ -2,6 +2,16 @@ import kbuild
 import ktest
 import pytest
 
+kgdbts_choices = [
+	'Unregistered I/O driver kgdbts',
+	'kgdbts:RUN',
+	'WARNING.*kgdbts[.]c.*[\r\n]',
+	'KGDB: BP remove failed',
+]
+KGDBTS_RUNNING = 1
+KGDBTS_WARNING =  2
+KGDBTS_FATAL = 3
+
 @pytest.fixture(scope="module")
 def kernel():
 	kbuild.config(kgdb=True)
@@ -28,6 +38,8 @@ def kernel():
 #@pytest.mark.xfail(condition = (kbuild.get_arch() == 'arm'), run = True,
 #		   reason = 'Hangs during concurrency tests')
 
+@pytest.mark.xfail(condition = (kbuild.get_arch() == 'x86'), run = True,
+		   reason = 'hw_access breakpoings not trapping')
 def test_kgdbts_V1(kernel):
 	'''
 	From drivers/misc/kgdbts.c:
@@ -38,14 +50,20 @@ def test_kgdbts_V1(kernel):
 	kernel.console.sendline('echo kgdbts=V1 > /sys/module/kgdbts/parameters/kgdbts')
 	choice = kernel.console.expect(['ERROR', 'Registered I/O driver kgdbts'])
 	assert choice
-	choices = [ 'WARNING.*kgdbts[.]c', 'kgdbts:RUN',
-			'Unregistered I/O driver kgdbts']
-	choice = 0
-	while choice != 2:
-		choice = kernel.console.expect(choices)
-		assert choice
 
-	kernel.console.expect_prompt()
+	try:
+		choice = KGDBTS_RUNNING
+		while choice:
+			choice = kernel.console.expect(kgdbts_choices)
+			assert(choice <= KGDBTS_RUNNING)
+	finally:
+		count = 100
+		while choice >= KGDBTS_RUNNING and \
+		      choice < KGDBTS_FATAL and \
+		      count:
+			choice = kernel.console.expect(kgdbts_choices)
+			count -= 1
+		kernel.console.expect_prompt()
 
 def test_kgdbts_V1S10000(kernel):
 	'''
@@ -81,12 +99,14 @@ def test_kgdbts_V1S10000(kernel):
 	choice = kernel.console.expect(['ERROR', 'Registered I/O driver kgdbts'])
 	assert choice
 
-	choices = [ 'WARNING.*kgdbts[.]c', 'kgdbts:RUN',
-			'Unregistered I/O driver kgdbts']
-	choice = 0
-	while choice != 2:
-		choice = kernel.console.expect(choices)
-		assert choice
+	choice = KGDBTS_RUNNING
+	while choice:
+		choice = kernel.console.expect(kgdbts_choices)
+		if choice == KGDBTS_WARNING and \
+		   'hw_break' in kernel.console.match.group(0):
+			print('>>> Ignoring hw_break error (will be reported by kgdbtest_V1 instead)\n')
+			continue
+		assert(choice <= KGDBTS_RUNNING)
 
 	# TODO: We'd like to expect_prompt() here but until it has resync
 	#       support its too risky!
@@ -123,12 +143,14 @@ def test_kgdbts_V1F1000(kernel):
 	choice = kernel.console.expect(['ERROR', 'Registered I/O driver kgdbts'])
 	assert choice
 
-	choices = [ 'WARNING.*kgdbts[.]c', 'kgdbts:RUN',
-			'Unregistered I/O driver kgdbts']
-	choice = 0
-	while choice != 2:
-		choice = kernel.console.expect(choices)
-		assert choice
+	choice = KGDBTS_RUNNING
+	while choice:
+		choice = kernel.console.expect(kgdbts_choices)
+		if choice == KGDBTS_WARNING and \
+		   'hw_break' in kernel.console.match.group(0):
+			print('>>> Ignoring hw_break error (will be reported by kgdbtest_V1 instead)\n')
+			continue
+		assert(choice <= KGDBTS_RUNNING)
 
 	# TODO: We'd like to expect_prompt() here but until it has resync
 	#       support its too risky!
