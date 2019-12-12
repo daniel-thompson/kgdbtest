@@ -50,7 +50,7 @@ def test_kgdbts_boot():
 		'##INVALID##',
 		'Unregistered I/O driver kgdbts',
 		'Freeing unused kernel.*memory',
-		'Starting logging',
+		'Starting.*log',
 		'OK',
 		'Welcome to Buildroot',
 		'buildroot login:',
@@ -59,10 +59,11 @@ def test_kgdbts_boot():
 	num_forks = 0
 	while len(choices) > 4:
 		choice = console.expect(choices)
+		if choice > 3:
+			print(f"Found '{console.match.group(0)}', still waiting for {choices[4:]}")
                 # HACK: Ignore problems with hw_break (we allow kgdbts_V1
                 #       to report them and would like to see the results
                 #       of the single step tests here)
-		print(console.match.group(0))
 		assert choice > 1 or 'hw_break' in console.match.group(0)
 		if 'login:' in choices[choice]:
 			console.sendline('root')
