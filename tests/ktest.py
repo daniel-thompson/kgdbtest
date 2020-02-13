@@ -83,6 +83,17 @@ def expect_kdb(self, sync=True):
 
 	self.expect('kdb>')
 
+def sendline_kdb(self, s=''):
+	"""
+	Works similar to the regular pexpect sendline() but sends
+	carriage return rather than os.linesep (usually a line feed).
+	"""
+	self.send(s)
+	self.send('\r')
+
+def inside_kdb(self):
+	return self.expect_prompt == self.expect_kdb
+
 def enter_kdb(self):
 	"""
 	Trigger the debugger and wait for the kdb prompt.
@@ -95,6 +106,8 @@ def enter_kdb(self):
 
 	self.old_expect_prompt = self.expect_prompt
 	self.expect_prompt = self.expect_kdb
+	self.old_sendline = self.sendline
+	self.sendline = self.sendline_kdb
 
 	# Allow chaining...
 	return self
@@ -118,6 +131,7 @@ def exit_kdb(self):
 		# Now we have got the prompt back we can exit kdb
 		self.send('go\r')
 		self.expect_prompt = self.old_expect_prompt
+		self.sendline = self.old_sendline
 	else:
 		warnings.warn(UserWarning("Cannot exit from kdb (already exited?)"))
 		# If we're not running in kdb its reasonable to look for a shell prompt
@@ -154,6 +168,8 @@ def bind_methods(c, d):
 	c.sysrq = MethodType(sysrq, c)
 	c.enter_kdb = MethodType(enter_kdb, c)
 	c.expect_kdb = MethodType(expect_kdb, c)
+	c.sendline_kdb = MethodType(sendline_kdb, c)
+	c.inside_kdb = MethodType(inside_kdb, c)
 	c.exit_kdb = MethodType(exit_kdb, c)
 
 	if d:
