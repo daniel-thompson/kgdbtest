@@ -92,10 +92,15 @@ def config(kgdb=False):
 		return
 
 	arch = get_arch()
+	postconfig = None
 	if 'arm' == arch:
 		defconfig = 'multi_v7_defconfig'
 	elif 'mips' == arch:
-		defconfig = 'malta_kvm_guest_defconfig'
+		# TODO: Advice from a MIPS guru on a better configuration
+		#       (and the corresponding qemu launch command) would
+		#       be very welcome.
+		defconfig = 'malta_kvm_guest_defconfig generic/64r6.config'
+		postconfig = '--enable CPU_MIPS64_R6 --enable MIPS_CPS'
 	elif 'x86' == arch:
 		defconfig = 'x86_64_defconfig'
 	else:
@@ -103,6 +108,10 @@ def config(kgdb=False):
 
 	run('make -C .. O=$PWD {}'.format(defconfig),
 		'Cannot configure kernel (wrong directory)')
+
+	if postconfig:
+		run('../scripts/config ' + postconfig,
+			'Cannot enable {} specific features'.format(arch))
 
 	if kgdb:
 		# TODO (v4.17): Needed in linux-next at present

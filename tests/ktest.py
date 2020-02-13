@@ -231,11 +231,10 @@ def qemu(kdb=True, append=None, gdb=False, gfx=False, interactive=False, second_
 		cmd += ' -m 1G -smp 2'
 		cmd += ' -kernel arch/arm64/boot/Image'
 	elif arch == 'mips':
-		cmd = 'qemu-system-mipsel'
+		cmd = 'qemu-system-mips64el'
 		cmd += ' -accel tcg,thread=multi '
-		cmd += ' -M malta'
-		# TODO: Does MIPS have a defconfig that boots SMP qemu systems?
-		cmd += ' -m 1G'
+		cmd += ' -cpu I6400 -M malta'
+		cmd += ' -m 1G -smp 2'
 		cmd += ' -kernel vmlinux'
 
 	elif arch == 'x86':
