@@ -24,7 +24,7 @@ def test_kgdb():
 
 	gdb.send('where\r')
 	gdb.expect('kgdb_initial_breakpoint')
-	gdb.expect('init_kgdboc')
+	gdb.expect(['init_kgdboc', 'configure_kgdboc'])
 	gdb.expect_prompt()
 
 	gdb.send('break do_sys_open\r')
