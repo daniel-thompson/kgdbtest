@@ -28,6 +28,45 @@ def test_nop(kdb):
 	c = kdb.console.enter_kdb()
 	c.exit_kdb()
 
+def test_bp(kdb):
+	'''
+	Simple breakpoint test.
+
+	Set a breakpoint, check it triggers and clear.
+	'''
+	c = kdb.console
+
+	c = kdb.console.enter_kdb()
+	try:
+		# Set the breakpoint
+		c.sendline('bp write_sysrq_trigger')
+		# Instruction(i) BP #0 at 0x1071b728 (write_sysrq_trigger)
+		#    is enabled   addr at 1071b728, hardtype=0 installed=0
+		c.expect('Instruction.*BP.*write_sysrq_trigger')
+		c.expect('is enabled')
+		c.expect_prompt()
+	finally:
+		c.exit_kdb()
+
+	# Check it triggers
+	c.sysrq('h')
+	c.enter_kdb(sysrq=False)
+	try:
+		c.sendline('bc 0')
+		# Breakpoint 0 at 0x106a0bf8 cleared
+		c.expect('Breakpoint.*cleared')
+		c.expect_prompt()
+	finally:
+		c.exit_kdb(shell=False)
+	# [ 6741.495608] sysrq: HELP : loglevel(0-9) reboot(b) crash(c)...
+	c.expect('[sS]ys[rR]q.*HELP.*show-registers')
+	c.expect_prompt()
+
+	# Check it does not retrigger
+	c.sysrq('h')
+	c.expect('[sS]ys[rR]q.*HELP.*show-registers')
+	c.expect_prompt()
+
 def test_bta(kdb):
 	'''
 	Test `bta` and its slightly weird nested pager.
