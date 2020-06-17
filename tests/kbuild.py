@@ -93,7 +93,9 @@ def config(kgdb=False):
 
 	arch = get_arch()
 	postconfig = None
-	if 'arm' == arch:
+	if 'NOCONFIG' in os.environ:
+		defconfig = None
+	elif 'arm' == arch:
 		defconfig = 'multi_v7_defconfig'
 	elif 'mips' == arch:
 		# TODO: Advice from a MIPS guru on a better configuration
@@ -106,8 +108,9 @@ def config(kgdb=False):
 	else:
 		defconfig = 'defconfig'
 
-	run('make -C .. O=$PWD {}'.format(defconfig),
-		'Cannot configure kernel (wrong directory)')
+	if defconfig:
+		run('make -C .. O=$PWD {}'.format(defconfig),
+			'Cannot configure kernel (wrong directory)')
 
 	if postconfig:
 		run('../scripts/config ' + postconfig,
