@@ -35,7 +35,6 @@ def test_kgdbts_boot():
 			console.timeout))
 
 	console.expect('Registered I/O driver kgdbts')
-	console.expect('Entering kdb')
 
 	# Check that the self test starts to run. The failure detect
 	# relies on all error paths calling WARN_ON().
