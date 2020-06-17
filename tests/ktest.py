@@ -94,13 +94,14 @@ def sendline_kdb(self, s=''):
 def inside_kdb(self):
 	return self.expect_prompt == self.expect_kdb
 
-def enter_kdb(self):
+def enter_kdb(self, sysrq=True):
 	"""
 	Trigger the debugger and wait for the kdb prompt.
 
 	Once we see the prompt we update expect_prompt() accordingly.
 	"""
-	self.sysrq('g')
+	if sysrq:
+		self.sysrq('g')
 	self.expect('Entering kdb')
 	self.expect_kdb()
 
@@ -112,7 +113,7 @@ def enter_kdb(self):
 	# Allow chaining...
 	return self
 
-def exit_kdb(self):
+def exit_kdb(self, resume=True, shell=True):
 	"""
 	Revert to normal running.
 
@@ -121,7 +122,7 @@ def exit_kdb(self):
 	is unknown. We do our best to robustly recover in order to
 	minimise the risk of cascaded failures.
 	"""
-	if self.expect_prompt == self.expect_kdb:
+	if resume and self.expect_prompt == self.expect_kdb:
 		# Make sure we break out of the pager (q is enough to break out
 		# but if we're *not* in the pager we need the \r to make the q
 		# harmless
@@ -132,17 +133,18 @@ def exit_kdb(self):
 		self.send('go\r')
 		self.expect_prompt = self.old_expect_prompt
 		self.sendline = self.old_sendline
-	else:
+	elif not resume:
 		warnings.warn(UserWarning("Cannot exit from kdb (already exited?)"))
 		# If we're not running in kdb its reasonable to look for a shell prompt
 
-	# We should now be running again but whether or not we get a
-	# prompt depends on how the debugger was triggered. This
-	# technique ensures we are fully up to date with the input.
-	tag = unique_tag()
-	self.send('echo "SYNC"_"SHELL"_"{}"\r'.format(tag))
-	self.expect('SYNC_SHELL_{}'.format(tag))
-	self.expect_prompt()
+	if shell:
+		# We should now be running again but whether or not we get a
+		# prompt depends on how the debugger was triggered. This
+		# technique ensures we are fully up to date with the input.
+		tag = unique_tag()
+		self.send('echo "SYNC"_"SHELL"_"{}"\r'.format(tag))
+		self.expect('SYNC_SHELL_{}'.format(tag))
+		self.expect_prompt()
 
 def gdb_connect_to_target(self):
 	self.expect_prompt()
