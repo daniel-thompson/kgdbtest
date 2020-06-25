@@ -5,6 +5,8 @@ logs/
 rootfs.cpio.xz
 __pycache__/
 
+attic/
+
 buildroot/arm/..config.tmp
 buildroot/arm/.br-external.mk
 buildroot/arm/.br2-external.*
