@@ -133,6 +133,13 @@ def config(kgdb=False):
                         '--enable LKDTM',
 			'Cannot configure kgdb extensions')
 
+	self_test = True
+	if self_test:
+		run('../scripts/config ' +
+                        '--enable PROVE_LOCKING ' +
+			'--enable DEBUG_ATOMIC_SLEEP ',
+			'Cannot enable RUNTIME_TESTING_MENU')
+
 	if need_olddefconfig:
 		run('make olddefconfig',
 			'Cannot finalize kernel configuration')
