@@ -216,6 +216,7 @@ def qemu(kdb=True, append=None, gdb=False, gfx=False, interactive=False, second_
 		cmdline += ' nokaslr'
 	if append:
 		cmdline += ' ' + append
+	cmdline += ' rodata=off'
 
 	# Heavily broken out so we can easily slot in support for other
 	# architectures.

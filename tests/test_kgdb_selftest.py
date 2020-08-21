@@ -13,10 +13,12 @@ KGDBTS_WARNING =  2
 KGDBTS_FATAL = 3
 
 @pytest.fixture(scope="module")
-def kernel():
+def build():
 	kbuild.config(kgdb=True)
 	kbuild.build()
 
+@pytest.fixture()
+def kernel(build):
 	qemu = ktest.qemu(kdb=False)
 
 	console = qemu.console
@@ -37,9 +39,8 @@ def kernel():
 
 #@pytest.mark.xfail(condition = (kbuild.get_arch() == 'arm'), run = True,
 #		   reason = 'Hangs during concurrency tests')
-
 @pytest.mark.xfail(condition = (kbuild.get_arch() == 'x86'), run = True,
-		   reason = 'hw_access breakpoings not trapping')
+		   reason = 'hw_access breakpoints not trapping')
 def test_kgdbts_V1(kernel):
 	'''
 	From drivers/misc/kgdbts.c:
