@@ -24,6 +24,7 @@ def expect_boot(self, bootloader=()):
 		self.expect(msg)
 	self.expect('Linux version.*$')
 	self.expect('Calibrating delay loop')
+	self.expect('Trying to unpack.*initramfs')
 	self.expect('NET: Registered protocol family 2')
         # We need a wildcard here because some newer kernels now say:
         # "Free unused kernel image memory".
