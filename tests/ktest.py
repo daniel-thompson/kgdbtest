@@ -215,6 +215,12 @@ def qemu(kdb=True, append=None, gdb=False, gfx=False, interactive=False, second_
 			cmdline += '{}1'.format(tty)
 	if gdb:
 		cmdline += ' nokaslr'
+	if arch == 'arm':
+		# The versatile boot process no longer contains sneaky
+		# ordering tricks to allow the console to come up without an
+		# -EPROBE_DEFER. Putting it another way... we'll see timeouts
+		# in several tests unless we have an earlycon.
+		cmdline += ' earlycon=pl011,0x1c090000'
 	if append:
 		cmdline += ' ' + append
 	cmdline += ' rodata=off'
