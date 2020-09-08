@@ -4,7 +4,7 @@ import pytest
 
 @pytest.mark.xfail(condition = kbuild.get_version() < (5, 8), run = False,
                    reason = 'Not implemented until 5.8-rc1')
-@pytest.mark.skipif(kbuild.get_arch() not in ('x86', 'arm64'),
+@pytest.mark.skipif(kbuild.get_arch() not in ('arm', 'arm64', 'x86'),
                    reason = 'earlycon not configured for this arch')
 def test_earlycon():
 	kbuild.config(kgdb=True)
@@ -14,6 +14,8 @@ def test_earlycon():
 	arch = kbuild.get_arch()
 	if 'x86' == arch:
 		earlycon = "earlycon=uart8250,io,0x3f8"
+	elif 'arm' ==  arch:
+		earlycon = "earlycon=pl011,0x1c090000"
 	else:
 		earlycon = "earlycon"
 
