@@ -86,6 +86,23 @@ def test_info_target(kgdb):
 		gdb.expect_prompt()
 		kgdb.exit_gdb()
 
+def test_info_thread(kgdb):
+	(console, gdb) = kgdb.enter_gdb()
+	try:
+		gdb.sendline('info thread')
+		# One of the CPUs should be stopped in kgdb_breakpoint()
+		gdb.expect('[(].*CPU.*[)][^\r\n]*kgdb_breakpoint')
+
+		# Look for a few common thread names
+		gdb.expect('[(]init[)]')
+		gdb.expect('[(]kthreadd[)]')
+		gdb.expect('[(]kworker/0:0[)]')
+
+		# Check the shell process is in kgdb_breakpoint()
+		gdb.expect('[(]sh[)][^\r\n]*kgdb_breakpoint')
+	finally:
+		gdb.expect_prompt()
+		kgdb.exit_gdb()
 
 def test_print_variable(kgdb):
 	(console, gdb) = kgdb.enter_gdb()
