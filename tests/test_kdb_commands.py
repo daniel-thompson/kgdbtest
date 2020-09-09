@@ -295,6 +295,35 @@ def test_mdr_variable(kdb):
 	finally:
 		kdb.console.exit_kdb()
 
+def test_ps(kdb):
+	commlist = [ 'sh[\r\n]', 'init[\r\n]', 'kthreadd[\r\n]', 'kworker/0:0[\r\n]' ]
+
+	c = kdb.console.enter_kdb()
+	try:
+		c.sendline('ps')
+		c.expect('sleeping system daemon.*processes suppressed')
+		assert 0 == c.expect(commlist)
+		assert 1 == c.expect(commlist)
+		# 2 is one of the threads we expect to be suppressed
+		assert 3 == c.expect(commlist)
+		c.expect_prompt()
+	finally:
+		c.exit_kdb()
+
+def test_ps_A(kdb):
+	commlist = [ 'sh[\r\n]', 'init[\r\n]', 'kthreadd[\r\n]', 'kworker/0:0[\r\n]' ]
+
+	c = kdb.console.enter_kdb()
+	try:
+		c.sendline('ps A')
+		assert 0 == c.expect(commlist)
+		assert 1 == c.expect(commlist)
+		assert 2 == c.expect(commlist)
+		assert 3 == c.expect(commlist)
+		c.expect_prompt()
+	finally:
+		c.exit_kdb()
+
 def test_ss(kdb):
 	'''
 	Test the `ss` command.
