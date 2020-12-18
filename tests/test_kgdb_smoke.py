@@ -41,7 +41,9 @@ def test_kgdb():
 	if kbuild.get_arch() in ('mips',):
 		gdb.expect_prompt()
 		gdb.send('info symbol $pc\r')
-	gdb.expect('do_sys_open')
+	# On x86_64 the PC lookup for this is __x64_sys_open so we don't
+	# expect the 'do'!
+	gdb.expect('_sys_open')
 	gdb.expect_prompt()
 
 	gdb.send('info thread\r')
