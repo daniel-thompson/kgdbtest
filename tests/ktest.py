@@ -198,6 +198,26 @@ class ConsoleWrapper(object):
 			self.debug.close()
 		self.console.close()
 
+	def enter_gdb(self):
+		(console, gdb) = (self.console, self.debug)
+
+		console.sysrq('g')
+		gdb.expect_prompt()
+
+		return (console, gdb)
+
+	def exit_gdb(self):
+		(console, gdb) = (self.console, self.debug)
+
+		gdb.sendline('continue')
+
+		# We should now be running again but whether or not we get a
+		# prompt depends on how the debugger was triggered. This
+		# technique ensures we are fully up to date with the input.
+		console.send('echo "FORCE"_"IO"_"SYNC"\r')
+		console.expect('FORCE_IO_SYNC')
+		console.expect_prompt()
+
 def qemu(kdb=True, append=None, gdb=False, gfx=False, interactive=False, second_uart=False):
 	'''Create a qemu instance and provide pexpect channels to control it'''
 

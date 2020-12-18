@@ -3,35 +3,12 @@ import ktest
 import pytest
 from types import MethodType
 
-def enter_gdb(self):
-	(console, gdb) = (self.console, self.debug)
-
-	console.sysrq('g')
-	gdb.expect_prompt()
-
-	return (console, gdb)
-
-def exit_gdb(self):
-	(console, gdb) = (self.console, self.debug)
-
-	gdb.sendline('continue')
-
-	# We should now be running again but whether or not we get a
-	# prompt depends on how the debugger was triggered. This
-	# technique ensures we are fully up to date with the input.
-	console.send('echo "FORCE"_"IO"_"SYNC"\r')
-	console.expect('FORCE_IO_SYNC')
-	console.expect_prompt()
-
 @pytest.fixture(scope="module")
 def kgdb():
 	kbuild.config(kgdb=True)
 	kbuild.build()
 
 	qemu = ktest.qemu(second_uart=True, gdb=True)
-
-	qemu.enter_gdb = MethodType(enter_gdb, qemu)
-	qemu.exit_gdb = MethodType(exit_gdb, qemu)
 
         # Wait for qemu to boot
 	qemu.console.expect_boot()
