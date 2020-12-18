@@ -146,12 +146,10 @@ def exit_kdb(self, resume=True, shell=True):
 		# If we're not running in kdb its reasonable to look for a shell prompt
 
 	if shell:
-		# We should now be running again but whether or not we get a
-		# prompt depends on how the debugger was triggered. This
-		# technique ensures we are fully up to date with the input.
-		tag = unique_tag()
-		self.send('echo "SYNC"_"SHELL"_"{}"\r'.format(tag))
-		self.expect('SYNC_SHELL_{}'.format(tag))
+		# The console should be running again but we don't know
+		# whether we have a prompt to let's force one and rely
+		# on expect_prompt() to resynchronize for us.
+		self.sendline('')
 		self.expect_prompt()
 
 def gdb_connect_to_target(self):
@@ -165,8 +163,8 @@ def gdb_expect_prompt(self):
 
 	tag = unique_tag('SYNC_GDB_')
 	# This printf has no newline which means the next gdb prompt will be
-	# on the same line as the tag thus we do not match local character echo
-	# by mistake.
+	# on the same line as the tag thus we will not match local character
+	# echo by mistake.
 	self.sendline(f'printf "{tag}"')
 	self.expect(f'{tag}[^\r\n]*[(]gdb[)] ')
 
@@ -198,25 +196,32 @@ class ConsoleWrapper(object):
 			self.debug.close()
 		self.console.close()
 
-	def enter_gdb(self):
+	def enter_gdb(self, sysrq=True):
 		(console, gdb) = (self.console, self.debug)
 
-		console.sysrq('g')
+		if sysrq:
+			# This should always provoke a gdb prompt to appear
+			console.sysrq('g')
+		else:
+			# gdb should be stopped but we don't know whether we
+			# have a prompt so let's force one and rely on
+			# expect_prompt() to resynchronize for us)
+			gdb.sendline('')
 		gdb.expect_prompt()
 
 		return (console, gdb)
 
-	def exit_gdb(self):
+	def exit_gdb(self, shell=False):
 		(console, gdb) = (self.console, self.debug)
 
 		gdb.sendline('continue')
 
-		# We should now be running again but whether or not we get a
-		# prompt depends on how the debugger was triggered. This
-		# technique ensures we are fully up to date with the input.
-		console.send('echo "FORCE"_"IO"_"SYNC"\r')
-		console.expect('FORCE_IO_SYNC')
-		console.expect_prompt()
+		if shell:
+			# The console should be running again but we don't know
+			# whether we have a prompt to let's force one and rely
+			# on expect_prompt() to resynchronize for us.
+			console.sendline('')
+			console.expect_prompt()
 
 def qemu(kdb=True, append=None, gdb=False, gfx=False, interactive=False, second_uart=False):
 	'''Create a qemu instance and provide pexpect channels to control it'''
