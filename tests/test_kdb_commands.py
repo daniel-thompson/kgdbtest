@@ -324,6 +324,10 @@ def test_ps_A(kdb):
 	finally:
 		c.exit_kdb()
 
+@pytest.mark.xfail(condition = (kbuild.get_arch() == 'arm'), run = False,
+		   reason = 'Oops when stepping after clearing breakpoint')
+@pytest.mark.xfail(condition = (kbuild.get_arch() == 'mips'), run = False,
+		   reason = 'Oops when stepping after clearing breakpoint')
 def test_ss(kdb):
 	'''
 	Test the `ss` command.
@@ -332,14 +336,26 @@ def test_ss(kdb):
 	the PC advances during the step. There's currently too much
 	variability between the architectures to go deeper on this.
 	'''
-	kdb.console.enter_kdb()
+	c = kdb.console.enter_kdb()
 	try:
+		# Set breakpoint to some place we can step fairly far
+		c.sendline('bp write_sysrq_trigger')
+		c.expect_prompt()
+		c.exit_kdb()
+
+		# Trigger and then clear the breakpoint
+		c.sysrq('h')
+		c.enter_kdb(sysrq=False)
+		c.sendline('bc 0')
+		c.expect_prompt()
+
+		# Single step a few times
 		for i in range(32):
-			kdb.console.send('ss\r')
-			kdb.console.expect('Entering kdb')
-			kdb.console.expect_prompt()
+			c.send('ss\r')
+			c.expect('Entering kdb')
+			c.expect_prompt()
 	finally:
-		kdb.console.exit_kdb()
+		c.exit_kdb()
 
 def test_sr(kdb):
 	c = kdb.console.enter_kdb()
