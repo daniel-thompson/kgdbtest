@@ -49,7 +49,9 @@ def test_earlycon():
 	console.expect_kdb()
 	console.sendline_kdb('go')
 
-	# We cannot expect boot here because kgbdoc initializes after some
-	# of the expected boot messages have already been issued.
+        # At this point kgdb has already fired up (on the earlycon). That
+        # means the early boot messages have already passed by, hence we
+        # need to set skip_early in the boot expectations.
+	qemu.console.expect_boot(skip_early=True)
 	qemu.console.expect_busybox()
 	qemu.close()

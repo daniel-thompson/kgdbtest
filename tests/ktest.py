@@ -19,16 +19,23 @@ def unique_tag(prefix=''):
 	return prefix + ''.join(
 		    [random.choice(string.ascii_uppercase) for i in range(8)])
 
-def expect_boot(self, bootloader=()):
+def expect_boot(self, bootloader=(), skip_early=False, skip_late=False):
 	for msg in bootloader:
 		self.expect(msg)
-	self.expect('Linux version.*$')
-	self.expect('Calibrating delay loop')
-	self.expect('Trying to unpack.*initramfs')
-	self.expect('NET: Registered protocol family 2')
-        # We need a wildcard here because some newer kernels now say:
-        # "Free unused kernel image memory".
-	self.expect('Freeing unused kernel.*memory')
+
+	if not skip_early:
+		self.expect('Linux version.*$')
+		self.expect('Calibrating delay loop')
+
+	self.expect('[Uu]npack.*initramfs')
+	self.timeout *= 2
+	self.expect('Freeing initrd memory')
+	self.timeout //= 2
+
+	if not skip_late:
+		# We need a wildcard here because some newer kernels now say:
+		# "Free unused kernel image memory".
+		self.expect('Freeing unused kernel.*memory')
 
 def expect_busybox(self):
 	self.expect('Starting .*: OK')

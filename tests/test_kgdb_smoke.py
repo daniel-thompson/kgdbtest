@@ -19,6 +19,7 @@ def test_kgdb():
 	console = qemu.console
 	gdb = qemu.debug
 
+	console.expect_boot(skip_late=True)
 	console.expect('Waiting for connection from remote gdb...')
 	gdb.connect_to_target()
 

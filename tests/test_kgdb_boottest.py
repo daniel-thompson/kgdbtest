@@ -24,6 +24,10 @@ def test_kgdbts_boot():
 	qemu = ktest.qemu(kdb=False, append='kgdbwait kgdbts=V1F100')
 	console = qemu.console
 
+        # We expect the test suite to start whilst initializing modules
+        # so we must skip the late boot expectations.
+	console.expect_boot(skip_late=True)
+
 	# Older kernels have no async progress display so for these
 	# kernels we just set a very long timeout (which means failures
 	# will take a long time to report too)
