@@ -199,7 +199,8 @@ def test_pager_page(kdb):
 	finally:
 		kdb.console.exit_kdb()
 
-@pytest.mark.xfail(reason = 'pager search eats line after match')
+@pytest.mark.xfail(condition = kbuild.get_version() < (5, 10),
+		   reason = 'pager search eats line after match')
 def test_pager_search(kdb):
 	kdb.console.enter_kdb()
 	try:
