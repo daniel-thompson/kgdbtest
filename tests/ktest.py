@@ -6,7 +6,24 @@ import string
 import sys
 import time
 import warnings
+import pytest
 from types import MethodType
+
+# We'd really like to upgrade these to fail words... but we have too many
+# of these right now.
+WARN_WORDS = [
+	'WARNING',
+	'BUG',
+]
+
+# These are signatures of something very bad happening. If we ever see
+# these when we are waiting for a prompt then we need to fail the test
+# immediately.
+FAIL_WORDS = [
+	'Critical breakpoint error',
+	'BP remove failed',
+	'breakpoint remove failed',
+]
 
 def unique_tag(prefix=''):
 	"""
@@ -48,18 +65,35 @@ def expect_busybox(self):
 	self.sendline('mount -t debugfs none /sys/kernel/debug')
 	self.expect_prompt()
 
+def expect_clean_output_until(self, prompt):
+	if not isinstance(prompt, list):
+		prompt = [ prompt ]
+
+	prompts = prompt + WARN_WORDS + FAIL_WORDS
+	silent = False
+	choice = self.expect(prompts)
+	while choice >= len(prompt):
+		msg = f'Observed {prompts[choice]} when waiting for {prompt}'
+		if choice >= (len(prompt) + len(WARN_WORDS)):
+			pytest.fail(msg)
+		else:
+			warnings.warn(msg)
+		choice = self.expect(prompts)
+
+	return choice
+
 def expect_prompt(self, sync=True):
 	if sync:
-		self.expect('# ')
+		self.expect_clean_output_until('# ')
 
 		tag = unique_tag('SYNC_SHELL_')
 		# The SYNC_SHELL_ABCD"EFGH" quoting ensures we can only match
 		# the output of the echo command (e.g. we never accidentally
 		# match a local character echo).
 		self.send(f'echo {tag[:-4]}"{tag[-4:]}"\r')
-		self.expect(tag)
+		self.expect_clean_output_until(tag)
 
-	self.expect('# ')
+	self.expect_clean_output_until('# ')
 
 def sysrq(self, ch):
 	"""
@@ -81,15 +115,15 @@ def expect_kdb(self, sync=True):
 	command history and escape sequence handling.
 	"""
 	if sync:
-		if 1 == self.expect(['kdb>', 'more>']):
+		if 1 == self.expect_clean_output_until(['kdb>', 'more>']):
 			self.send('q')
-			self.expect('kdb>')
+			self.expect_clean_output_until('kdb>')
 
 		tag = unique_tag('SYNC_KDB_')
 		self.send(tag + '\r')
-		self.expect('Unknown[^\r\n]*' + tag)
+		self.expect_clean_output_until('Unknown[^\r\n]*' + tag)
 
-	self.expect('kdb>')
+	self.expect_clean_output_until('kdb>')
 
 def sendline_kdb(self, s=''):
 	"""
@@ -142,7 +176,7 @@ def exit_kdb(self, resume=True, shell=True):
 		self.expect_prompt = self.old_expect_prompt
 		self.sendline = self.old_sendline
 	elif not resume:
-		warnings.warn(UserWarning("Cannot exit from kdb (already exited?)"))
+		warnings.warn("Cannot exit from kdb (already exited?)")
 		# If we're not running in kdb its reasonable to look for a shell prompt
 
 	if shell:
@@ -172,6 +206,7 @@ def bind_methods(c, d):
 	# TODO: Can we use introspection to find methods to bind?
 	c.expect_boot = MethodType(expect_boot, c)
 	c.expect_busybox = MethodType(expect_busybox, c)
+	c.expect_clean_output_until = MethodType(expect_clean_output_until, c)
 	c.expect_prompt = MethodType(expect_prompt, c)
 	c.sysrq = MethodType(sysrq, c)
 	c.enter_kdb = MethodType(enter_kdb, c)
@@ -190,7 +225,7 @@ class ConsoleWrapper(object):
 		bind_methods(console, debug)
 		self.console = console
 		self.debug = debug
-	
+
 	def close(self):
 		if self.debug:
 			self.debug.close()
@@ -255,7 +290,6 @@ def qemu(kdb=True, append=None, gdb=False, gfx=False, interactive=False, second_
 		cmdline += ' earlycon=pl011,0x1c090000'
 	if append:
 		cmdline += ' ' + append
-	cmdline += ' rodata=off'
 
 	# Heavily broken out so we can easily slot in support for other
 	# architectures.
