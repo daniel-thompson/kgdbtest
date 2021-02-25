@@ -78,9 +78,7 @@ def skip(msg):
 	print('### SKIP: %s ###' % (msg,))
 	sys.exit(125)
 
-def config(kgdb=False):
-	need_olddefconfig=kgdb
-
+def config(kgdb=False, extra_config=None):
 	kdir = get_kdir()
 	try:
 		os.mkdir(kdir)
@@ -138,11 +136,18 @@ def config(kgdb=False):
 		run('../scripts/config ' +
                         '--enable PROVE_LOCKING ' +
 			'--enable DEBUG_ATOMIC_SLEEP ',
-			'Cannot enable RUNTIME_TESTING_MENU')
+			'Cannot enable PROVE_LOCKING and DEBUG_ATOMIC_SLEEP')
 
-	if need_olddefconfig:
-		run('make olddefconfig',
-			'Cannot finalize kernel configuration')
+	if extra_config:
+		with open('.config', 'a') as f:
+			for config in extra_config:
+				if config.startswith('CONFIG_'):
+					print(config, file=f)
+				else:
+					print(f'CONFIG_{config}', file=f)
+
+	run('make olddefconfig',
+		'Cannot finalize kernel configuration')
 
 def build():
 	if 'NOBUILD' in os.environ:
