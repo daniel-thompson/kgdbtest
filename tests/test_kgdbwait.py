@@ -35,11 +35,7 @@ def kgdb(build):
 
 @pytest.mark.parametrize('fn', (
 	'panic',
-	pytest.param('kdb_init',
-		marks = pytest.mark.xfail(
-			condition = (kbuild.get_arch() == 'arm64'),
-			reason = 'Cannot disable freed breakpoint')
-        ),
+	'kdb_init',
 ))
 def test_kdb_breakpoint(kdb, fn):
 	c = kdb.console.enter_kdb(sysrq=False)
@@ -59,11 +55,7 @@ def test_kdb_breakpoint(kdb, fn):
 
 @pytest.mark.parametrize('fn', (
 	'panic',
-	pytest.param('kdb_init',
-		marks = pytest.mark.xfail(
-			condition = (kbuild.get_arch() == 'arm64'),
-			reason = 'Cannot disable freed breakpoint')
-        ),
+	'kdb_init',
 ))
 def test_kgdb_breakpoint(kgdb, fn):
 	c, d = kgdb.enter_gdb(sysrq=False)
