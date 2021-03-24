@@ -149,9 +149,22 @@ def config(kgdb=False, extra_config=None):
 	run('make olddefconfig',
 		'Cannot finalize kernel configuration')
 
+last_config = None
+
 def build():
+	global last_config
+
 	if 'NOBUILD' in os.environ:
 		return
+
+	# This is a quick and dirty bit of build avoidance. If the .config is
+	# the same as the last time we built the tree then let's avoid all the
+	# work.
+	with open('.config') as f:
+		new_config = f.read()
+	if last_config == new_config:
+		return
+	last_config = new_config
 
 	run('make -s -j `nproc` all',
 		'Cannot compile kernel')
