@@ -262,6 +262,7 @@ def qemu(kdb=True, append=None, gdb=False, gfx=False, interactive=False, second_
 	'''Create a qemu instance and provide pexpect channels to control it'''
 
 	arch = kbuild.get_arch()
+	host_arch = kbuild.get_host_arch()
 
 	if arch == 'arm' or arch == 'arm64':
 		tty = 'ttyAMA'
@@ -302,8 +303,11 @@ def qemu(kdb=True, append=None, gdb=False, gfx=False, interactive=False, second_
 		cmd += ' -dtb arch/arm/boot/dts/vexpress-v2p-ca15-tc1.dtb'
 	elif arch == 'arm64':
 		cmd = 'qemu-system-aarch64'
-		cmd += ' -accel tcg,thread=multi '
-		cmd += ' -M virt,gic_version=3 -cpu cortex-a57'
+		if host_arch == 'arm64':
+			cmd += ' -cpu host -M virt,gic_version=3,accel=kvm'
+		else:
+			cmd += ' -accel tcg,thread=multi '
+			cmd += ' -M virt,gic_version=3 -cpu cortex-a57'
 		cmd += ' -m 1G -smp 2'
 		cmd += ' -kernel arch/arm64/boot/Image'
 	elif arch == 'mips':
@@ -315,7 +319,8 @@ def qemu(kdb=True, append=None, gdb=False, gfx=False, interactive=False, second_
 
 	elif arch == 'x86':
 		cmd = 'qemu-system-x86_64'
-		cmd += ' -enable-kvm'
+		if host_arch == 'x86':
+			cmd += ' -enable-kvm'
 		cmd += ' -m 1G -smp 2'
 		cmd += ' -kernel arch/x86/boot/bzImage'
 	else:
