@@ -107,8 +107,9 @@ def config(kgdb=False, extra_config=None):
 		# TODO: Advice from a MIPS guru on a better configuration
 		#       (and the corresponding qemu launch command) would
 		#       be very welcome.
-		defconfig = 'malta_kvm_guest_defconfig generic/64r6.config'
+		defconfig = 'malta_kvm_defconfig generic/64r6.config'
 		postconfig = '--enable CPU_MIPS64_R6 --enable MIPS_CPS'
+		postconfig += ' --enable BLK_DEV_INITRD'
 	elif 'x86' == arch:
 		defconfig = 'x86_64_defconfig'
 	else:
