@@ -46,7 +46,13 @@ def expect_boot(self, bootloader=(), skip_early=False, skip_late=False):
 
 	self.expect('[Uu]npack.*initramfs')
 	self.timeout *= 2
-	self.expect('Freeing initrd memory')
+
+    # Memory is not *always* freed after unpacking the initramfs so we must
+    # also look for other common messages that indicate we moved on from
+    # unpacking the initramfs.
+	self.expect(['Freeing initrd memory',
+                 'io scheduler.*registered',
+                 'Registered I/O driver kgdboc'])
 	self.timeout //= 2
 
 	if not skip_late:
