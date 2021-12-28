@@ -98,7 +98,7 @@ def config(kgdb=False, extra_config=None):
 		return
 
 	arch = get_arch()
-	postconfig = None
+	postconfig = '--enable WERROR'
 	if 'NOCONFIG' in os.environ:
 		defconfig = None
 	elif 'arm' == arch:
@@ -108,7 +108,7 @@ def config(kgdb=False, extra_config=None):
 		#       (and the corresponding qemu launch command) would
 		#       be very welcome.
 		defconfig = 'malta_kvm_defconfig generic/64r6.config'
-		postconfig = '--enable CPU_MIPS64_R6 --enable MIPS_CPS'
+		postconfig += ' --enable CPU_MIPS64_R6 --enable MIPS_CPS'
 		postconfig += ' --enable BLK_DEV_INITRD'
 	elif 'x86' == arch:
 		defconfig = 'x86_64_defconfig'
