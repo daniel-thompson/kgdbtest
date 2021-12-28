@@ -234,7 +234,7 @@ def test_tab_complete(kdb):
 	c = kdb.console.enter_kdb()
 	try:
 		symbols = [ 'kdb_reboot ', 'kdb_rd ',
-                            'kdb_register ', 'kdb_register_flags ' ]
+                            'kdb_register ', 'kdb_rm ' ]
 		c.send('kdb_r\t\t')
 		while symbols:
 			i = c.expect(symbols)
