@@ -189,44 +189,44 @@ def md_regex(bytesperword, fields):
 def test_mdXc1(kdb):
 	kdb.console.enter_kdb()
 	try:
-		kdb.console.send('md1c1 printk\r')
+		kdb.console.send('md1c1 kdb_init\r')
 		kdb.console.expect(md_regex(1, 1))
 		assert 0 == kdb.console.expect(['kdb>', '0x[0-9a-f]'])
 
-		kdb.console.send('md2c1 printk\r')
+		kdb.console.send('md2c1 kdb_init\r')
 		kdb.console.expect(md_regex(2, 1))
 		assert 0 == kdb.console.expect(['kdb>', '0x[0-9a-f]'])
 
-		kdb.console.send('md3c1 printk\r')
+		kdb.console.send('md3c1 kdb_init\r')
 		kdb.console.expect('Illegal value for BYTESPERWORD')
 		kdb.console.expect_prompt()
 
-		kdb.console.send('md4c1 printk\r')
+		kdb.console.send('md4c1 kdb_init\r')
 		kdb.console.expect(md_regex(4, 1))
 		assert 0 == kdb.console.expect(['kdb>', '0x[0-9a-f]'])
 
-		kdb.console.send('md5c1 printk\r')
+		kdb.console.send('md5c1 kdb_init\r')
 		kdb.console.expect('Illegal value for BYTESPERWORD')
 		kdb.console.expect_prompt()
 
-		kdb.console.send('md6c1 printk\r')
+		kdb.console.send('md6c1 kdb_init\r')
 		kdb.console.expect('Illegal value for BYTESPERWORD')
 		kdb.console.expect_prompt()
 
-		kdb.console.send('md7c1 printk\r')
+		kdb.console.send('md7c1 kdb_init\r')
 		kdb.console.expect('Illegal value for BYTESPERWORD')
 		kdb.console.expect_prompt()
 
-		kdb.console.send('md8c1 printk\r')
+		kdb.console.send('md8c1 kdb_init\r')
 		kdb.console.expect([md_regex(8, 1),
 		                    'Illegal value for BYTESPERWORD'])
 		assert 0 == kdb.console.expect(['kdb>', '0x[0-9a-f]'])
 
-		kdb.console.send('md9c1 printk\r')
+		kdb.console.send('md9c1 kdb_init\r')
 		kdb.console.expect('Illegal value for BYTESPERWORD')
 		kdb.console.expect_prompt()
 
-		kdb.console.send('md10c1 printk\r')
+		kdb.console.send('md10c1 kdb_init\r')
 		kdb.console.expect('Unknown kdb command')
 		kdb.console.expect_prompt()
 	finally:
@@ -239,19 +239,19 @@ def test_mdXc4(kdb):
 		def data(bytesperword, fields):
 			return '([0-9a-f]'
 
-		kdb.console.send('md1c4 printk\r')
+		kdb.console.send('md1c4 kdb_init\r')
 		kdb.console.expect(md_regex(1, 4))
 		assert 0 == kdb.console.expect(['kdb>', '0x[0-9a-f]'])
 
-		kdb.console.send('md2c4 printk\r')
+		kdb.console.send('md2c4 kdb_init\r')
 		kdb.console.expect(md_regex(2, 4))
 		assert 0 == kdb.console.expect(['kdb>', '0x[0-9a-f]'])
 
-		kdb.console.send('md4c4 printk\r')
+		kdb.console.send('md4c4 kdb_init\r')
 		kdb.console.expect(md_regex(4, 4))
 		assert 0 == kdb.console.expect(['kdb>', '0x[0-9a-f]'])
 
-		kdb.console.send('md8c4 printk\r')
+		kdb.console.send('md8c4 kdb_init\r')
 		if 0 == kdb.console.expect([md_regex(8, 2),
 				'Illegal value for BYTESPERWORD']):
 			kdb.console.expect(md_regex(8, 2))
@@ -263,21 +263,21 @@ def test_mdXc4(kdb):
 def test_mdXc16(kdb):
 	kdb.console.enter_kdb()
 	try:
-		kdb.console.send('md1c16 printk\r')
+		kdb.console.send('md1c16 kdb_init\r')
 		kdb.console.expect(md_regex(1, 16))
 		assert 0 == kdb.console.expect(['kdb>', '0x[0-9a-f]'])
 
-		kdb.console.send('md2c16 printk\r')
+		kdb.console.send('md2c16 kdb_init\r')
 		kdb.console.expect(md_regex(2, 8))
 		kdb.console.expect(md_regex(2, 8))
 		assert 0 == kdb.console.expect(['kdb>', '0x[0-9a-f]'])
 
-		kdb.console.send('md4c16 printk\r')
+		kdb.console.send('md4c16 kdb_init\r')
 		for i in range(4):
 			kdb.console.expect(md_regex(4, 4))
 		assert 0 == kdb.console.expect(['kdb>', '0x[0-9a-f]'])
 
-		kdb.console.send('md8c16 printk\r')
+		kdb.console.send('md8c16 kdb_init\r')
 		if 0 == kdb.console.expect([md_regex(8, 2),
 				'Illegal value for BYTESPERWORD']):
 			for i in range(7):
