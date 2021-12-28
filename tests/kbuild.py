@@ -20,12 +20,12 @@ def get_version(short=False):
 	return (version, patchlevel, sublevel, extraversion)
 
 def get_host_arch():
-    rc = subprocess.run(('uname', '-a'), capture_output=True)
-    if b'aarch64' in rc.stdout:
-        return 'arm64'
+	output = subprocess.check_output('uname -m'.split()).decode()
+	if 'aarch64' in output:
+		return 'arm64'
 
     # If we can't prove otherwise then let's assume we have an x86 host
-    return 'x86'
+	return 'x86'
 
 def get_arch():
 	if 'ARCH' in os.environ:
