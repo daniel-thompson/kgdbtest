@@ -296,7 +296,7 @@ def test_mdr_variable(kdb):
 		kdb.console.exit_kdb()
 
 def test_ps(kdb):
-	commlist = [ 'sh[\r\n]', 'init[\r\n]', 'kthreadd[\r\n]', 'kworker/0:0[\r\n]' ]
+	commlist = [ 'sh[\r\n]', 'init[\r\n]', 'kthreadd[\r\n]', 'rcu_sched[\r\n]' ]
 
 	c = kdb.console.enter_kdb()
 	try:
@@ -311,7 +311,7 @@ def test_ps(kdb):
 		c.exit_kdb()
 
 def test_ps_A(kdb):
-	commlist = [ 'sh[\r\n]', 'init[\r\n]', 'kthreadd[\r\n]', 'kworker/0:0[\r\n]' ]
+	commlist = [ 'sh[\r\n]', 'init[\r\n]', 'kthreadd[\r\n]', 'rcu_sched[\r\n]' ]
 
 	c = kdb.console.enter_kdb()
 	try:
