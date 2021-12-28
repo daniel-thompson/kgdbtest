@@ -50,3 +50,5 @@ buildroot/x86/host/
 buildroot/x86/images/
 buildroot/x86/staging
 buildroot/x86/target/
+
+kgdbtest.log
