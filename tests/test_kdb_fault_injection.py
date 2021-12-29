@@ -66,6 +66,9 @@ def test_WARNING(kdb):
 	kdb.console.sendline('echo WARNING > /sys/kernel/debug/provoke-crash/DIRECT')
 	kdb.console.expect('WARNING')
 	#kdb.console.expect('lkdtm_WARNING')
-	kdb.console.expect('vfs_write')
-	kdb.console.expect_prompt()
 
+	# riscv doesn't issue stack trace on warnings
+	if kbuild.get_arch() != 'riscv':
+		kdb.console.expect('vfs_write')
+
+	kdb.console.expect_prompt()
