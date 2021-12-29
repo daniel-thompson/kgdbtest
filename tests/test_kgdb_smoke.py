@@ -54,7 +54,7 @@ def test_kgdb():
 	gdb.expect_prompt()
 	gdb.send('where\r')
 	gdb.expect('kthread')
-	gdb.expect(['ret_from_fork', 'ret_from_kernel_thread'])
+	gdb.expect(['ret_from_fork', 'ret_from_kernel_thread', 'riscv.*entry[.]S'])
 	gdb.expect_prompt()
 
 	gdb.send('delete 1\r')
