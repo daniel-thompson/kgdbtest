@@ -183,18 +183,19 @@ def test_pager_page(kdb):
 	kdb.console.enter_kdb()
 	try:
 		kdb.console.send('help\r')
+		kdb.console.expect('Continue Execution')
+
 		kdb.console.expect('more>')
-		
 		kdb.console.send(' ')
+
 		kdb.console.expect('Enter kgdb mode')
 		# test_pager_search relies on 'Single Step' to detect
 		# failure. If this expectation requires modifying then
 		# test_pager_search may need updating too.
 		kdb.console.expect('Single Step')
-		kdb.console.expect('more>')
 
+		kdb.console.expect('more>')
 		kdb.console.send(' ')
-		kdb.console.expect('Same as dumpall')
 		kdb.console.expect('kdb>')
 	finally:
 		kdb.console.exit_kdb()
