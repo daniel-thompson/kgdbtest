@@ -296,7 +296,7 @@ def test_mdr_variable(kdb):
 		kdb.console.exit_kdb()
 
 def test_ps(kdb):
-	commlist = [ 'sh[\r\n]', 'init[\r\n]', 'kthreadd[\r\n]', 'rcu_sched[\r\n]' ]
+	commlist = [ 'sh[\r\n]', 'init[\r\n]', 'kthreadd[\r\n]', 'syslogd[\r\n]' ]
 
 	c = kdb.console.enter_kdb()
 	try:
@@ -311,15 +311,23 @@ def test_ps(kdb):
 		c.exit_kdb()
 
 def test_ps_A(kdb):
-	commlist = [ 'sh[\r\n]', 'init[\r\n]', 'kthreadd[\r\n]', 'rcu_sched[\r\n]' ]
+	commlist = [ 'more>', 'sh[\r\n]', 'init[\r\n]', 'kthreadd[\r\n]', 'syslogd[\r\n]' ]
+
+	def expect(n):
+		while True:
+			r = c.expect(commlist)
+			if r != 0:
+				break
+			c.send(' ')
+		assert(r == n)
 
 	c = kdb.console.enter_kdb()
 	try:
 		c.sendline('ps A')
-		assert 0 == c.expect(commlist)
-		assert 1 == c.expect(commlist)
-		assert 2 == c.expect(commlist)
-		assert 3 == c.expect(commlist)
+		expect(1)
+		expect(2)
+		expect(3)
+		expect(4)
 		c.expect_prompt()
 	finally:
 		c.exit_kdb()
