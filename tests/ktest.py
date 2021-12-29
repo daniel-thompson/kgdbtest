@@ -194,7 +194,7 @@ def exit_kdb(self, resume=True, shell=True):
 
 def gdb_connect_to_target(self):
 	self.expect_prompt()
-	self.send('target extended-remote | socat - UNIX:ttyS1.sock\r')
+	self.send(f'target extended-remote {self.connection}\r')
 	self.expect('Remote debugging using')
 	self.expect_prompt()
 
@@ -227,12 +227,15 @@ def bind_methods(c, d):
 
 
 class ConsoleWrapper(object):
-	def __init__(self, console, debug=None):
+	def __init__(self, console, debug=None, monitor=None):
 		bind_methods(console, debug)
 		self.console = console
 		self.debug = debug
+		self.monitor = monitor
 
 	def close(self):
+		if self.monitor:
+			self.monitor.close()
 		if self.debug:
 			self.debug.close()
 		self.console.close()
@@ -274,6 +277,9 @@ def qemu(kdb=True, append=None, gdb=False, gfx=False, interactive=False, second_
 		tty = 'ttyAMA'
 	else:
 		tty = 'ttyS'
+
+	if arch == 'riscv':
+		second_uart = False
 
 	cmdline = ''
 	if gfx:
@@ -322,7 +328,12 @@ def qemu(kdb=True, append=None, gdb=False, gfx=False, interactive=False, second_
 		cmd += ' -cpu I6400 -M malta'
 		cmd += ' -m 1G -smp 2'
 		cmd += ' -kernel vmlinux'
-
+	elif arch == 'riscv':
+		cmd = 'qemu-system-riscv64'
+		cmd += ' -accel tcg,thread=multi'
+		cmd += ' -machine virt'
+		cmd += '  -m 1G -smp 2'
+		cmd += ' -kernel arch/riscv/boot/Image'
 	elif arch == 'x86':
 		cmd = 'qemu-system-x86_64'
 		if host_arch == 'x86':
@@ -334,11 +345,17 @@ def qemu(kdb=True, append=None, gdb=False, gfx=False, interactive=False, second_
 
 	if not gfx:
 		cmd += ' -nographic'
-	cmd += ' -monitor none'
-	cmd += ' -chardev stdio,id=mon,mux=on,signal=off -serial chardev:mon'
 	if second_uart:
+		cmd += ' -monitor none'
+		cmd += ' -chardev stdio,id=mon,mux=on,signal=off -serial chardev:mon'
 		cmd += ' -chardev socket,id=ttyS1,path=ttyS1.sock,server,nowait'
 		cmd += ' -serial chardev:ttyS1'
+	elif gdb:
+		cmd += ' -S -chardev pty,id=ttyS0 -serial chardev:ttyS0'
+	else:
+		cmd += ' -monitor none'
+		cmd += ' -chardev stdio,id=mon,mux=on,signal=off -serial chardev:mon'
+
 	cmd += ' -initrd rootfs.cpio.gz'
 	cmd += ' -append "{}"'.format(cmdline)
 
@@ -355,6 +372,7 @@ def qemu(kdb=True, append=None, gdb=False, gfx=False, interactive=False, second_
 					kbuild.get_kdir(), gdbcmd))
 
 		print('+| ' + cmd)
+		time.sleep(5)
 		os.system(cmd)
 		return None
 
@@ -368,4 +386,32 @@ def qemu(kdb=True, append=None, gdb=False, gfx=False, interactive=False, second_
 	else:
 		gdb = None
 
-	return ConsoleWrapper(qemu, gdb)
+	if gdb and not second_uart:
+		monitor = qemu
+		monitor.expect('char device redirected to (/dev/pts/[0-9]*) .label')
+		uart_pty = monitor.match.group(1)
+
+		dmx = pexpect.spawn(f'kdmx -p {uart_pty}', encoding='utf-8', logfile=sys.stdout)
+		dmx.expect('(/dev/pts/[0-9]*) is slave pty for terminal emulator')
+		console_pty = dmx.match.group(1)
+		dmx.expect('(/dev/pts/[0-9]*) is slave pty for gdb')
+		gdb_pty = dmx.match.group(1)
+		print(f'Demuxing from {uart_pty} to {console_pty}^{gdb_pty}')
+
+		console = pexpect.spawn(f'picocom {console_pty}', encoding='utf-8', logfile=sys.stdout)
+		gdb.connection = gdb_pty;
+
+		# Attach the kdmx process to the monitor (otherwise it will be
+		# closed when the function exits.
+		monitor.dmx = dmx
+
+		# Set everything running
+		monitor.expect('[(]qemu[)]')
+		monitor.sendline('cont')
+		monitor.expect('[(]qemu[)]')
+
+		return ConsoleWrapper(console, gdb, monitor)
+	else:
+		if gdb:
+			gdb.connection = '|socat - UNIX:ttyS1.sock'
+		return ConsoleWrapper(qemu, gdb)

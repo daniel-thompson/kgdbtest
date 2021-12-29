@@ -98,6 +98,7 @@ def config(kgdb=False, extra_config=None):
 		return
 
 	arch = get_arch()
+	defconfig = 'defconfig'
 	postconfig = '--enable WERROR'
 	if 'NOCONFIG' in os.environ:
 		defconfig = None
@@ -110,10 +111,11 @@ def config(kgdb=False, extra_config=None):
 		defconfig = 'malta_kvm_defconfig generic/64r6.config'
 		postconfig += ' --enable CPU_MIPS64_R6 --enable MIPS_CPS'
 		postconfig += ' --enable BLK_DEV_INITRD'
+	elif 'riscv' == arch:
+		postconfig += ' --disable STRICT_KERNEL_RWX'
+		postconfig += ' --disable STRICT_MODULE_RWX'
 	elif 'x86' == arch:
 		defconfig = 'x86_64_defconfig'
-	else:
-		defconfig = 'defconfig'
 
 	if defconfig:
 		run('make -C .. O=$PWD {}'.format(defconfig),
