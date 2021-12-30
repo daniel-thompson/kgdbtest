@@ -278,7 +278,7 @@ def qemu(kdb=True, append=None, gdb=False, gfx=False, interactive=False, second_
 	else:
 		tty = 'ttyS'
 
-	if arch == 'riscv':
+	if arch == 'arm64' or arch == 'riscv':
 		second_uart = False
 
 	cmdline = ''
