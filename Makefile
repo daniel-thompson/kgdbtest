@@ -13,6 +13,9 @@ else
 endif
 export KGDBTEST_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
+# Include kdmx in the path
+export PATH := $(PATH):$(shell pwd)/agent-proxy/kdmx
+
 test :
 	pytest-3 $(PYTEST_VERBOSE) $(PYTEST_RESTRICT) $(PYTEST_EXTRAFLAGS)
 
@@ -52,7 +55,7 @@ BUILDROOT_INTERMEDIATES = \
 		$(KGDBTEST_DIR)/buildroot/$(ARCH)/staging \
 		$(KGDBTEST_DIR)/buildroot/$(ARCH)/target
 
-buildroot : buildroot-update buildroot-build buildroot-tidy
+buildroot : kdmx buildroot-update buildroot-build buildroot-tidy
 
 buildroot-update : submodule-update buildroot-config
 
@@ -69,5 +72,8 @@ buildroot-build :
 # the cross-compilers and root images alone.
 buildroot-tidy :
 	$(RM) -r $(BUILDROOT_INTERMEDIATES)
+
+kdmx : submodule-update
+	$(MAKE) -C agent-proxy/kdmx
 
 .PHONY : submodule-update buildroot buildroot-update buildroot-config buildroot-build buildroot-tidy
