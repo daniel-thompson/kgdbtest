@@ -48,6 +48,7 @@ rules to help construct the filesystem.
 ARCH=arm make buildroot
 ARCH=arm64 make buildroot
 ARCH=mips make buildroot
+ARCH=riscv make buildroot
 ARCH=x86 make buildroot
 ~~~
 
