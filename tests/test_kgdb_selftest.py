@@ -113,8 +113,6 @@ def test_kgdbts_V1S10000(kernel):
 	kernel.console.sendline('for i in `seq $n`; do kill %$i; done; sleep 1')
 	kernel.console.expect_prompt()
 
-@pytest.mark.xfail(condition = (kbuild.get_arch() == 'arm64'), run = True,
-		   reason = 'Unexpected kernel single-step exception at EL1')
 def test_kgdbts_V1F1000(kernel):
 	'''
 	From drivers/misc/kgdbts.c:

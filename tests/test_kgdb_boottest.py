@@ -4,8 +4,6 @@ import pytest
 
 #@pytest.mark.xfail(condition = (kbuild.get_arch() == 'arm'), run = True,
 #		   reason = 'Hangs during concurrency tests')
-@pytest.mark.xfail(condition = (kbuild.get_arch() == 'arm64'), run = True,
-		   reason = 'Unexpected kernel single-step exception at EL1')
 @pytest.mark.xfail(condition = (kbuild.get_arch() == 'x86'), run = True,
 		   reason = 'KGDB: BP remove failed')
 def test_kgdbts_boot():
