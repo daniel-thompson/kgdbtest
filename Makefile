@@ -68,6 +68,9 @@ buildroot-build :
 	$(RM) -r $(BUILDROOT_INTERMEDIATES)
 	make -C $(KGDBTEST_DIR)/buildroot/$(ARCH)
 
+buildroot-clean :
+	(cd $(KGDBTEST_DIR)/buildroot/$(ARCH); $(MAKE) -C $(BUILDROOT) O=$$PWD clean)
+
 # This is enough to save disk space (and force a rebuild) but leaves
 # the cross-compilers and root images alone.
 buildroot-tidy :
@@ -76,4 +79,4 @@ buildroot-tidy :
 kdmx : submodule-update
 	$(MAKE) -C agent-proxy/kdmx
 
-.PHONY : submodule-update buildroot buildroot-update buildroot-config buildroot-build buildroot-tidy
+.PHONY : submodule-update buildroot buildroot-update buildroot-config buildroot-build buildroot-clean buildroot-tidy
