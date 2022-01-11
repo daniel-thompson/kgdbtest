@@ -142,9 +142,9 @@ def test_btc(kdb):
 	finally:
 		c.exit_kdb()
 		c.send('kill %1\r')
-		c.expect_prompt()
+		c.expect_prompt(no_history=True)
 		c.send('kill %2\r')
-		c.expect_prompt()
+		c.expect_prompt(no_history=True)
 
 
 def test_help(kdb):

@@ -109,10 +109,8 @@ def test_kgdbts_V1S10000(kernel):
 			continue
 		assert(choice <= KGDBTS_RUNNING)
 
-	# TODO: We'd like to expect_prompt() here but until it has resync
-	#       support its too risky!
-
-	kernel.console.sendline('for i in `seq $n`; do kill %$i; done')
+	kernel.console.expect_prompt(no_history=True)
+	kernel.console.sendline('for i in `seq $n`; do kill %$i; done; sleep 1')
 	kernel.console.expect_prompt()
 
 @pytest.mark.xfail(condition = (kbuild.get_arch() == 'arm64'), run = True,
@@ -153,8 +151,6 @@ def test_kgdbts_V1F1000(kernel):
 			continue
 		assert(choice <= KGDBTS_RUNNING)
 
-	# TODO: We'd like to expect_prompt() here but until it has resync
-	#       support its too risky!
-
-	kernel.console.sendline('for i in `seq $n`; do kill %$i; done')
+	kernel.console.expect_prompt(no_history=True)
+	kernel.console.sendline('for i in `seq $n`; do kill %$i; done; sleep 1')
 	kernel.console.expect_prompt()

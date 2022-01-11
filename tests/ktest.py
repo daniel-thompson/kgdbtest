@@ -87,9 +87,10 @@ def expect_clean_output_until(self, prompt):
 
 	return choice
 
-def expect_prompt(self, sync=True):
+def expect_prompt(self, sync=True, no_history=False):
 	if sync:
-		self.expect_clean_output_until('# ')
+		if not no_history:
+			self.expect_clean_output_until('# ')
 
 		tag = unique_tag('SYNC_SHELL_')
 		# The SYNC_SHELL_ABCD"EFGH" quoting ensures we can only match
