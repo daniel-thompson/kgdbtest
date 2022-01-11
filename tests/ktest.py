@@ -395,10 +395,21 @@ def qemu(kdb=True, append=None, gdb=False, gfx=False, interactive=False, second_
 		console_pty = dmx.match.group(1)
 		dmx.expect('(/dev/pts/[0-9]*) is slave pty for gdb')
 		gdb_pty = dmx.match.group(1)
+		gdb.connection = gdb_pty;
 		print(f'Demuxing from {uart_pty} to {console_pty}^{gdb_pty}')
 
+		# Start picocom and wait for it to be ready. It *must* be ready before
+		# we (cont)inue in the qemu monitor or we will miss the initial boot
+		# messages. Sadly it appears that, even though picocom has opened all
+		# the file handles when it says "Terminal ready" the connection isn't
+		# fully established until picocom calls select() in its event loop.
+		# Enable/disable local echo in order to guarantee we get that far.
 		console = pexpect.spawn(f'picocom {console_pty}', encoding='utf-8', logfile=sys.stdout)
-		gdb.connection = gdb_pty;
+		console.expect('picocom')
+		console.expect('Terminal ready')
+		console.send('\x01\x03\x01\03')
+		console.expect('local echo.*no')
+		time.sleep(1)
 
 		# Attach the kdmx process to the monitor (otherwise it will be
 		# closed when the function exits.
