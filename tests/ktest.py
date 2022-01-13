@@ -187,7 +187,7 @@ def exit_kdb(self, resume=True, shell=True):
 		# but if we're *not* in the pager we need the \r to make the q
 		# harmless
 		self.send('q\r')
-		self.expect('kdb>')
+		self.expect_prompt('kdb>')
 
 		# Now we have got the prompt back we can exit kdb
 		self.send('go\r')
@@ -199,10 +199,9 @@ def exit_kdb(self, resume=True, shell=True):
 
 	if shell:
 		# The console should be running again but we don't know
-		# whether we have a prompt to let's force one and rely
-		# on expect_prompt() to resynchronize for us.
-		self.sendline('')
-		self.expect_prompt()
+		# whether we have a prompt or not...
+		time.sleep(0.1)
+		self.expect_prompt(no_history=True)
 
 def gdb_connect_to_target(self):
 	self.expect_prompt()
