@@ -99,7 +99,8 @@ def config(kgdb=False, extra_config=None):
 
 	arch = get_arch()
 	defconfig = 'defconfig'
-	postconfig = '--enable WERROR'
+	if 'NOWERROR' not in os.environ:
+		postconfig = '--enable WERROR'
 	if 'NOCONFIG' in os.environ:
 		defconfig = None
 	elif 'arm' == arch:
