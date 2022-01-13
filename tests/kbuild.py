@@ -183,9 +183,14 @@ def build():
 		return
 	last_config = new_config
 
-	run('make -s -j `nproc` all',
+	make = 'make -s -j `nproc` '
+	if 'NICEBUILD' in os.environ:
+		# Ensure everything the spreads across all CPUs treads lightly
+		make = 'nice ' + make
+
+	run(make + 'all',
 		'Cannot compile kernel')
-	run('make -s -j `nproc` modules_install ' +
+	run(make + 'modules_install ' +
 		'INSTALL_MOD_PATH=$PWD/mod-rootfs INSTALL_MOD_STRIP=1',
 		'Cannot install kernel modules')
 	run('unxz -c $KGDBTEST_DIR/buildroot/{}/images/rootfs.cpio.xz > rootfs.cpio'
