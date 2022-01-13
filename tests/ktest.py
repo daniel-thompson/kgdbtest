@@ -44,20 +44,26 @@ def expect_boot(self, bootloader=(), skip_early=False, skip_late=False):
 		self.expect('Linux version.*$')
 		self.expect('Calibrating delay loop')
 
+	# Initramfs decompression can take a long time (especially on a
+	# TCG based VM on a busy machine). Extend the timeout until
+	# the next console interaction...
 	self.expect('[Uu]npack.*initramfs')
+	self.timeout *= 2
+
 	if not skip_late:
 		# Memory is not *always* freed after unpacking the initramfs so
 		# we must also look for other common messages that indicate we
 		# moved on from unpacking the initramfs.
-		self.timeout *= 2
 		self.expect(['Freeing initrd memory',
 			     'io scheduler.*registered',
 			     'Registered I/O driver kgdboc'])
-		self.timeout //= 2
 
 		# We need a wildcard here because some newer kernels now say:
 		# "Free unused kernel image memory".
 		self.expect('Freeing unused kernel.*memory')
+
+		# Restore the normal timeout
+		self.timeout = self.default_timeout
 
 def expect_busybox(self):
 	self.expect('Starting .*: OK')
@@ -89,6 +95,12 @@ def expect_clean_output_until(self, prompt):
 
 def expect_prompt(self, sync=True, no_history=False):
 	if sync:
+		# During expect_boot(skip_late=True) the timeout is extended
+		# to allow for lengthy initramfs decompression and never
+		# restored. In these cases we restore the default timeout
+		# whenever we sync with the prompt.
+		self.timeout = self.default_timeout
+
 		if not no_history:
 			self.expect_clean_output_until('# ')
 
@@ -229,6 +241,10 @@ def bind_methods(c, d):
 class ConsoleWrapper(object):
 	def __init__(self, console, debug=None, monitor=None):
 		bind_methods(console, debug)
+
+		# Needed by expect_boot()/expect_prompt()
+		console.default_timeout = console.timeout
+
 		self.console = console
 		self.debug = debug
 		self.monitor = monitor

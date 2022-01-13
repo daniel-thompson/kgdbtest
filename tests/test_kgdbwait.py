@@ -12,8 +12,7 @@ def kdb(build):
 	qemu = ktest.qemu(append='kgdbwait')
 
 	console = qemu.console
-	console.expect('Linux version.*$')
-	console.expect('Calibrating delay loop')
+	qemu.console.expect_boot(skip_late=True)
 
 	yield qemu
 
@@ -23,9 +22,8 @@ def kdb(build):
 def kgdb(build):
 	qemu = ktest.qemu(second_uart=True, gdb=True, append='kgdbwait')
 
-	qemu.console.expect('Linux version.*$')
-	qemu.console.expect('Calibrating delay loop')
-	qemu.console.expect('kdb>')
+	qemu.console.expect_boot(skip_late=True)
+	qemu.console.expect('Waiting for connection from remote gdb...')
 	qemu.debug.connect_to_target()
 
 	yield qemu

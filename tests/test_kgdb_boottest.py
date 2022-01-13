@@ -32,7 +32,7 @@ def test_kgdbts_boot():
 	# kernels we just set a very long timeout (which means failures
 	# will take a long time to report too)
 	if kbuild.get_version() < (4, 17):
-		console.timeout *= 10
+		console.timeout *= 5
 		print('Kernel is below v4.17, extended timeout to {}'.format(
 			console.timeout))
 
