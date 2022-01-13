@@ -118,7 +118,9 @@ def test_btc(kdb):
 	c = kdb.console
 	try:
 		# Generate some load
-		c.send('dd if=/dev/urandom of=/dev/null bs=65536 &' * 2 + '\r')
+		c.sendline('n=$((`nproc` + 1))')
+		c.expect_prompt()
+		c.sendline('for i in `seq $n`; do dd if=/dev/urandom of=/dev/null bs=65536 & done')
 		c.expect_prompt()
 
 		c.enter_kdb()
@@ -126,7 +128,7 @@ def test_btc(kdb):
 		# btc/start/stop
 		for i in range(16):
 
-			c.send('btc | grep traceback\r')
+			c.sendline('btc | grep traceback')
 
 			choices = ['kdb>', 'traceback']
 			choice = c.expect(choices)
@@ -141,10 +143,11 @@ def test_btc(kdb):
 
 	finally:
 		c.exit_kdb()
-		c.send('kill %1\r')
+
+		# Terminate the load generating tasks
 		c.expect_prompt(no_history=True)
-		c.send('kill %2\r')
-		c.expect_prompt(no_history=True)
+		c.sendline('for i in `seq $n`; do kill %$i; done; sleep 1')
+		c.expect_prompt()
 
 
 def test_help(kdb):
