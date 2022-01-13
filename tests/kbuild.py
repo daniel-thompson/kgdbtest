@@ -94,14 +94,14 @@ def config(kgdb=False, extra_config=None):
 		pass
 	os.chdir(kdir)
 
-	if 'NOBUILD' in os.environ:
+	if 'NOCONFIG' in os.environ or 'NOBUILD' in os.environ :
 		return
 
 	arch = get_arch()
 	defconfig = 'defconfig'
 	if 'NOWERROR' not in os.environ:
 		postconfig = '--enable WERROR'
-	if 'NOCONFIG' in os.environ:
+	if 'NODEFCONFIG' in os.environ:
 		defconfig = None
 	elif 'arm' == arch:
 		defconfig = 'multi_v7_defconfig'
