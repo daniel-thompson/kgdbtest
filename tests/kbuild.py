@@ -196,7 +196,7 @@ def build():
 	run('unxz -c $KGDBTEST_DIR/buildroot/{}/images/rootfs.cpio.xz > rootfs.cpio'
 			.format(get_arch()),
 		'Cannot decompress rootfs')
-	run('(cd mod-rootfs; find . | cpio -H newc -AoF ../rootfs.cpio)',
+	run('(rm -rf mod-rootfs/*; cd mod-rootfs; find . | cpio -H newc -AoF ../rootfs.cpio)',
 		'Cannot copy kernel modules into rootfs')
 	# Compressing with xz would be expensive, gzip is enough here
 	run('gzip -f rootfs.cpio',
