@@ -112,6 +112,11 @@ def config(kgdb=False, extra_config=None):
 		defconfig = 'malta_kvm_defconfig generic/64r6.config'
 		postconfig += ' --enable CPU_MIPS64_R6 --enable MIPS_CPS'
 		postconfig += ' --enable BLK_DEV_INITRD'
+
+		# JFFS2_FS, FRAME_WARN and WERROR don't play nice together
+		# (at least on v5.16/mips). Since JFFS2 isn't used or
+		# tested by kgdbtest let's just disable it.
+		postconfig += ' --disable JFFS2_FS'
 	elif 'riscv' == arch:
 		postconfig += ' --disable STRICT_KERNEL_RWX'
 		postconfig += ' --disable STRICT_MODULE_RWX'
