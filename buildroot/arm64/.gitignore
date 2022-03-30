@@ -1,0 +1,10 @@
+..config.tmp
+.br-external.mk
+.br2-external.*
+.config.old
+Makefile
+build/
+host/
+images/
+staging
+target/
