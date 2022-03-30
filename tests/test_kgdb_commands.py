@@ -63,6 +63,11 @@ def test_info_target(kgdb):
 		gdb.expect_prompt()
 		kgdb.exit_gdb()
 
+# The failure on x86 has a reproduction rate of approximately 5%.
+# It is rare but is frequent enough to affect suite reliability
+# (and it causes a cascading failure so we will avoid runninng it)
+@pytest.mark.xfail(condition = kbuild.get_arch() == 'x86', run = False,
+                   reason = 'GDB reports packet errors')
 def test_info_thread(kgdb):
 	(console, gdb) = kgdb.enter_gdb()
 	try:
