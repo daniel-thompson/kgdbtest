@@ -363,10 +363,12 @@ def test_rd(kdb):
 	finally:
 		c.exit_kdb()
 
-@pytest.mark.xfail(condition = (kbuild.get_arch() == 'arm'), run = False,
-		   reason = 'Oops when stepping after clearing breakpoint')
-@pytest.mark.xfail(condition = (kbuild.get_arch() == 'mips'), run = False,
-		   reason = 'Oops when stepping after clearing breakpoint')
+@pytest.mark.xfail(condition = (kbuild.get_arch() == 'arm'),
+		   reason = 'Stepping triggers breakpoint')
+@pytest.mark.xfail(condition = (kbuild.get_arch() == 'mips'),
+		   reason = 'Stepping triggers breakpoint')
+@pytest.mark.xfail(condition = (kbuild.get_arch() == 'arm64'),
+		   reason = 'Stepping does not advance PC')
 def test_ss(kdb):
 	'''
 	Test the `ss` command.
@@ -385,15 +387,27 @@ def test_ss(kdb):
 		# Trigger and then clear the breakpoint
 		c.sysrq('h')
 		c.enter_kdb(sysrq=False)
+
+		oldpc = ''
+
+		# Single step a few times
+		for i in range(16):
+			c.send('ss\r')
+			c.expect('Entering kdb')
+			choice = c.expect(['due to SS', 'due to Breakpoint'])
+			assert(choice == 0)
+			c.expect(' @ 0x[0-9a-f]*[^0-9a-f]')
+			newpc = c.after
+			c.expect_prompt()
+
+			assert(newpc != oldpc)
+			oldpc = newpc
+	finally:
+		# Clear the breakpoint (doesn't matter if we never set it...
+		# we'll still get a prompt and be recovered for the next test.
 		c.sendline('bc 0')
 		c.expect_prompt()
 
-		# Single step a few times
-		for i in range(32):
-			c.send('ss\r')
-			c.expect('Entering kdb')
-			c.expect_prompt()
-	finally:
 		c.exit_kdb()
 
 def test_sr(kdb):
