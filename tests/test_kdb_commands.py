@@ -335,6 +335,34 @@ def test_ps_A(kdb):
 	finally:
 		c.exit_kdb()
 
+def test_rd(kdb):
+	'''Test the `rd` command.
+
+	Grab the contents of the register set and (optionally) perform a
+	per-arch sanity test. The actual call to the rd command happens
+	inside the library code in ktest.py [get_regs_kdb()]. However it is
+	worth pulling out into a seperate test because other tests won't fail
+	in such an easily understood way if there were a regression in the
+	output of `rd`.
+	'''
+	c = kdb.console.enter_kdb()
+	try:
+		regs = c.get_regs()
+
+		if kbuild.get_arch() == 'arm64':
+			assert 'x0' in regs
+			assert regs['sp'].startswith('ffff')
+			assert regs['pc'].startswith('ffff')
+		elif kbuild.get_arch == 'riscv':
+			assert regs['sp'].startswith('ffff')
+			assert regs['pc'].startswith('ffff')
+		elif kbuild.get_arch() == 'x86':
+			assert 'ax' in regs
+			assert regs['sp'].startswith('ffff')
+			assert regs['ip'].startswith('ffff')
+	finally:
+		c.exit_kdb()
+
 @pytest.mark.xfail(condition = (kbuild.get_arch() == 'arm'), run = False,
 		   reason = 'Oops when stepping after clearing breakpoint')
 @pytest.mark.xfail(condition = (kbuild.get_arch() == 'mips'), run = False,

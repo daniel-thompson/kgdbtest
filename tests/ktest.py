@@ -154,6 +154,59 @@ def sendline_kdb(self, s=''):
 def inside_kdb(self):
 	return self.expect_prompt == self.expect_kdb
 
+def run_command_kdb(self, cmd):
+	"""A REPLWrapper.run_command() work-a-like.
+
+	Collects the command output, automatically handles the kdb
+	pager and ensures we are synced before returning control
+	to the caller.
+	"""
+	assert self.inside_kdb()
+
+	self.sendline(cmd)
+	self.expect(cmd + '[\r\n]*')
+
+	# Absorb the output
+	output = ''
+	while 1 == self.expect(['[\r\n]+[\[\]0-9]*kdb> ', '[\r\n]+more> ']):
+		output += self.before.replace('\r', '')
+		self.send(' ')
+		self.expect(' [\r\n]*')
+	output += self.before.replace('\r', '')
+
+	# Verify sync
+	self.sendline()
+	self.expect_prompt()
+
+	return output
+
+def get_regs_kdb(self):
+	"""Fetch and parse the regsister set.
+
+	Output is assumed to be in the following form (colon seperated and
+	with a double space between registers on the same line).
+
+	ax: 0000000000000001  bx: 0000000000000000  cx: 0000000000000000
+	dx: 0000000000000000  si: ffffffff92b854f1  di: 0000000000000067
+	bp: 0000000000000067  sp: ffffa3b480287e68  r8: ffffffff92f54028
+	r9: 00000000ffffdfff  r10: ffffffff92e74040  r11: ffffffff92e74040
+	r12: 0000000000000000  r13: 0000000000000007  r14: ffffffff928107a0
+	r15: 0000000000000002  ip: ffffffff91760c2b  flags: 00000202  cs: 00000010
+	ss: 00000018  ds: 00000018  es: 00000018  fs: 00000018  gs: 00000018
+	"""
+	output = self.run_command('rd')
+
+	# Convert to one-line per register.
+	output = output.replace('  ', '\n').strip()
+
+	# Convert from one-line per register into a dictionary
+	regs = {}
+	for r in output.split('\n'):
+		(name, val) = r.split(': ')
+		regs[name] = val
+
+	return regs
+
 def enter_kdb(self, sysrq=True):
 	"""
 	Trigger the debugger and wait for the kdb prompt.
@@ -231,6 +284,8 @@ def bind_methods(c, d):
 	c.sendline_kdb = MethodType(sendline_kdb, c)
 	c.inside_kdb = MethodType(inside_kdb, c)
 	c.exit_kdb = MethodType(exit_kdb, c)
+	c.run_command = MethodType(run_command_kdb, c)
+	c.get_regs = MethodType(get_regs_kdb, c)
 
 	if d:
 		d.connect_to_target = MethodType(gdb_connect_to_target, d)
