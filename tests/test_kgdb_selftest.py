@@ -66,6 +66,10 @@ def test_kgdbts_V1(kernel):
 			count -= 1
 		kernel.console.expect_prompt()
 
+# XFAIL on RISC-V does not reproduce reliably but it occurs frequently enough
+# to make the suite verdict unreliable so for now we will mark it accordingly.
+@pytest.mark.xfail(condition = (kbuild.get_arch() == 'riscv'), run = True,
+		   reason = 'bad unlock balance detected')
 def test_kgdbts_V1S10000(kernel):
 	'''
 	From drivers/misc/kgdbts.c:
