@@ -111,8 +111,7 @@ def test_bta(kdb):
 		c.exit_kdb()
 
 def test_btc(kdb):
-	'''
-	Test `btc` (backtrace on all cpus)
+	'''Test `btc` (backtrace on all cpus)
 
         This is a simple survival test.
 	'''
@@ -150,6 +149,35 @@ def test_btc(kdb):
 		c.sendline('for i in `seq $n`; do kill %$i; done; sleep 1')
 		c.expect_prompt()
 
+def test_btp(kdb):
+	'''Test `btp` (backtrace specific PID)'''
+
+	# Stack traceback for pid 1
+	# 0xffffa19381198000        1        0  0    1   S  0xffffa193811994c0  init
+	# Call Trace:
+	#  <TASK>
+	#  __schedule+0x2f9/0xb30
+	#  schedule+0x49/0xb0
+	#  schedule_hrtimeout_range_clock+0x12e/0x140
+	#  ? lock_release+0x13c/0x2e0
+	#  ? _raw_spin_unlock_irq+0x1f/0x40
+	#  do_sigtimedwait+0x172/0x250
+	# [...]
+	output = kdb.console.run_command('btp 1')
+
+	assert output.startswith('Stack traceback for pid 1')
+	assert 'init\n' in output
+
+	# Normally init will sleep inside do_sigtimedwait() but if
+	# init is on the CPU (e.g. *init appears in the process list)
+	# then we are doing something else and will see kdb calls
+	# instead!
+	expect_sigtimedwait = '*init' not in output
+	if expect_sigtimedwait:
+		assert ('do_sigtimedwait' in output or
+		        'sys_rt_sigtimedwait' in output)
+	else:
+		assert 'kgdb_cpu_enter' in output
 
 def test_help(kdb):
 	'''Test the `help` command.
@@ -302,6 +330,43 @@ def test_mdr_variable(kdb):
 		kdb.console.expect_prompt()
 	finally:
 		kdb.console.exit_kdb()
+
+def test_pid(kdb):
+	c = kdb.console.enter_kdb()
+	try:
+		# KDB current process is init(pid=1)
+		output = c.run_command('pid 1')
+		assert 'current process is init'
+
+		# Stack traceback for pid 1
+		# 0xffffa19381198000        1        0  0    1   S  0xffffa193811994c0  init
+		# Call Trace:
+		#  <TASK>
+		#  __schedule+0x2f9/0xb30
+		#  schedule+0x49/0xb0
+		#  schedule_hrtimeout_range_clock+0x12e/0x140
+		#  ? lock_release+0x13c/0x2e0
+		#  ? _raw_spin_unlock_irq+0x1f/0x40
+		#  do_sigtimedwait+0x172/0x250
+		# [...]
+		output = c.run_command('bt')
+
+		assert output.startswith('Stack traceback for pid 1')
+		assert 'init\n' in output
+
+		# Normally init will sleep inside do_sigtimedwait() but if
+		# init is on the CPU (e.g. *init appears in the process list)
+		# then we are doing something else and will see kdb calls
+		# instead!
+		expect_sigtimedwait = '*init' not in output
+		if expect_sigtimedwait:
+			assert ('do_sigtimedwait' in output or
+			        'sys_rt_sigtimedwait' in output)
+		else:
+			assert 'kgdb_cpu_enter' in output
+
+	finally:
+		c.exit_kdb()
 
 def test_ps(kdb):
 	commlist = [ 'sh[\r\n]', 'init[\r\n]', 'kthreadd[\r\n]', 'syslogd[\r\n]' ]
