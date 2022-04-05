@@ -1,6 +1,7 @@
 import kbuild
 import ktest
 import pytest
+import re
 
 @pytest.fixture(scope="module")
 def kdb():
@@ -151,13 +152,17 @@ def test_btc(kdb):
 
 
 def test_help(kdb):
-	c = kdb.console.enter_kdb()
-	try:
-		c.send('help\r')
-		c.expect('go.*Continue Execution')
-		c.expect_prompt()
-	finally:
-		c.exit_kdb()
+	'''Test the `help` command.
+
+	Runs the command and checks a couple of basic command are present
+	and correct. Note that `go` and `kgdb` (and often `dumpcpu` too)
+	appear on different pages (but paging is transparently handled by
+	run_command().
+	'''
+	output = kdb.console.run_command('help')
+	assert re.search(r'\ngo *\[<vaddr>\] *Continue Execution\n', output)
+	assert re.search(r'\nkgdb *Enter kgdb mode\n', output)
+	assert re.search(r'\ndumpcpu *Same as dumpall', output)
 
 def test_go(kdb):
 	'''
