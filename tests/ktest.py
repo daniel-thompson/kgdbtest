@@ -126,7 +126,7 @@ def sysrq(self, ch):
 	"""
 	self.send('echo {} > /proc/sysrq-trigger\r'.format(ch))
 
-def expect_kdb(self, sync=True):
+def expect_kdb(self, sync=True, no_prompt=False):
 	"""
 	Manage the pager until we get a kdb prompt (or timeout)
 
@@ -139,11 +139,12 @@ def expect_kdb(self, sync=True):
 	history and will not trigger the pager. This is useful for testing
 	command history and escape sequence handling.
 	"""
-	if sync:
+	if sync and not no_prompt:
 		if 1 == self.expect_clean_output_until(['kdb>', 'more>']):
 			self.send('q')
 			self.expect_clean_output_until('kdb>')
 
+	if sync or no_prompt:
 		tag = unique_tag('SYNC_KDB_')
 		self.send(tag + '\r')
 		self.expect_clean_output_until('Unknown[^\r\n]*' + tag)
@@ -164,26 +165,32 @@ def inside_kdb(self):
 def run_command_kdb(self, cmd):
 	"""A REPLWrapper.run_command() work-a-like.
 
-	Collects the command output, automatically handles the kdb
-	pager and ensures we are synced before returning control
-	to the caller.
+	Returns the output from running a kdb command. Automatically handles
+	both entry in kdb (if required) and the kdb pager. The code also
+	ensures we are synced before returning control to the caller.
 	"""
-	assert self.inside_kdb()
-
-	self.sendline(cmd)
-	self.expect(cmd + '[\r\n]*')
-
-	# Absorb the output
+	enter_kdb = not self.inside_kdb()
 	output = ''
-	while 1 == self.expect(['[\r\n]+[\[\]0-9]*kdb> ', '[\r\n]+more> ']):
-		output += self.before.replace('\r', '')
-		self.send(' ')
-		self.expect(' [\r\n]*')
-	output += self.before.replace('\r', '')
 
-	# Verify sync
-	self.sendline()
-	self.expect_prompt()
+	try:
+		if enter_kdb:
+			self.enter_kdb()
+
+		self.sendline(cmd)
+		self.expect(cmd + '[\r\n]*')
+
+		# Absorb the output
+		while 1 == self.expect([r'[\r\n]+[\[\]0-9]*kdb> ', r'[\r\n]+more> ']):
+			output += self.before.replace('\r', '') + '\n'
+			self.send(' ')
+		output += self.before.replace('\r', '')
+
+		# Verify sync
+		if not enter_kdb:
+			self.expect_prompt(no_prompt=True)
+	finally:
+		if enter_kdb:
+			self.exit_kdb()
 
 	return output
 
