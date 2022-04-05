@@ -65,6 +65,13 @@ def expect_boot(self, bootloader=(), skip_early=False, skip_late=False):
 		# Restore the normal timeout
 		self.timeout = self.default_timeout
 
+	# Reset the terminal when running in platforms whose bootloader
+	# output screws up the handling of line breaks... a bit gross
+	# but makes reading the diagnostic output less painful!
+	arch = kbuild.get_arch()
+	if arch == 'x86':
+		os.system('reset')
+
 def expect_busybox(self):
 	self.expect('Starting .*: OK')
 	self.expect('Welcome to Buildroot')
