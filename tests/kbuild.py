@@ -140,6 +140,7 @@ def config(kgdb=False, extra_config=None):
 
 		run('../scripts/config ' +
 			'--enable DEBUG_INFO ' +
+			'--enable DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT ' +
 			'--enable DEBUG_FS ' +
                         '--enable KALLSYMS_ALL ' +
 			'--enable MAGIC_SYSRQ ' +
