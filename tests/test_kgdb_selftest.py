@@ -66,10 +66,13 @@ def test_kgdbts_V1(kernel):
 			count -= 1
 		kernel.console.expect_prompt()
 
-# XFAIL on RISC-V does not reproduce reliably but it occurs frequently enough
-# to make the suite verdict unreliable so for now we will mark it accordingly.
-@pytest.mark.xfail(condition = (kbuild.get_arch() == 'riscv'), run = True,
+# These XFAILs do not reproduce reliably but it occurs frequently enough
+# to make the suite verdict unreliable so for now we have to mark them
+# accordingly. On x86 the failure rate is guestimated at ~15%.
+@pytest.mark.xfail(condition = (kbuild.get_arch() == 'riscv'),
 		   reason = 'bad unlock balance detected')
+@pytest.mark.xfail(condition = (kbuild.get_arch() == 'x86'),
+		   reason = 'plant and detach test likely to fail')
 def test_kgdbts_V1S10000(kernel):
 	'''
 	From drivers/misc/kgdbts.c:
@@ -117,6 +120,8 @@ def test_kgdbts_V1S10000(kernel):
 	kernel.console.sendline('for i in `seq $n`; do kill %$i; done; sleep 1')
 	kernel.console.expect_prompt()
 
+@pytest.mark.xfail(condition = (kbuild.get_arch() == 'x86'),
+		   reason = 'fails approximately ~30% of the time')
 def test_kgdbts_V1F1000(kernel):
 	'''
 	From drivers/misc/kgdbts.c:
