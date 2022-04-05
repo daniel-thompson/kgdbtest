@@ -363,6 +363,29 @@ def test_rd(kdb):
 	finally:
 		c.exit_kdb()
 
+def test_summary(kdb):
+	'''Test the `summary` command.
+
+	The summary output usually looks like this::
+
+	    sysname    Linux
+	    release    5.17.0
+	    version    #150 SMP PREEMPT Thu Mar 31 09:34:03 BST 2022
+	    machine    aarch64
+	    nodename   (none)
+	    domainname (none)
+	    date       1970-01-01 00:00:01 tz_minuteswest 0
+	    uptime     00:00
+	    load avg   0.00 0.00 0.00
+
+	    MemTotal:         976356 kB
+	    MemFree:          949648 kB
+	    Buffers:               0 kB
+	'''
+	summary = kdb.console.run_command('summary')
+	assert summary.startswith('sysname    Linux')
+	assert 'MemTotal' in summary
+
 @pytest.mark.xfail(condition = (kbuild.get_arch() == 'arm'),
 		   reason = 'Stepping triggers breakpoint')
 @pytest.mark.xfail(condition = (kbuild.get_arch() == 'mips'),
