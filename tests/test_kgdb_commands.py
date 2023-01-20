@@ -31,7 +31,7 @@ def test_nop(kgdb):
 
 def test_continue(kgdb):
 	(console, gdb) = (kgdb.console, kgdb.debug)
-	
+
 	console.sysrq('g')
 	gdb.expect_prompt()
 
@@ -58,7 +58,9 @@ def test_info_target(kgdb):
 	(console, gdb) = kgdb.enter_gdb()
 	try:
 		gdb.sendline('info target')
-		gdb.expect('Debugging a target over a serial line')
+		gdb.expect('remote.*target.*gdb.*protocol')
+		gdb.expect('text')
+		gdb.expect('rodata')
 	finally:
 		gdb.expect_prompt()
 		kgdb.exit_gdb()
