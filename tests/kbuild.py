@@ -146,7 +146,8 @@ def config(kgdb=False, extra_config=None):
 			'--enable MAGIC_SYSRQ ' +
 			'--enable KGDB --enable KGDB_TESTS ' +
                         '--enable KGDB_KDB --enable KDB_KEYBOARD ' +
-                        '--enable LKDTM',
+                        '--enable LKDTM ' +
+                        '--enable SECURITY_LOCKDOWN_LSM ',
 			'Cannot configure kgdb extensions')
 
 	self_test = True
@@ -202,4 +203,3 @@ def build():
 	# Compressing with xz would be expensive, gzip is enough here
 	run('gzip -f rootfs.cpio',
 		'Cannot recompress rootfs')
-
