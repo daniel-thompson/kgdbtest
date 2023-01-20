@@ -351,7 +351,7 @@ def test_pid(kdb):
 		# [...]
 		output = c.run_command('bt')
 
-		assert output.startswith('Stack traceback for pid 1')
+		assert output.strip().startswith('Stack traceback for pid 1')
 		assert 'init\n' in output
 
 		# Normally init will sleep inside do_sigtimedwait() but if
