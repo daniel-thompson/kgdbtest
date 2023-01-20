@@ -17,8 +17,12 @@ def main(argv):
 		if arg in ('kgdb', 'nowait', 'gfx', 'graphics'):
 			continue
 
-		# UPPERCASE= is treated as a config options,
 		# lowercase= or MixedCased= becomes a kernel option
+		# UPPERCASE= is treated as a config options
+		#
+		# For CONFIG_OPTIONS= the CONFIG_ prefix is optional
+		# and =n is a legitimate value (e.g. KGDB_KDB=n does
+		# exactly what you think it does).
 
 		stem = arg.split('=')[0]
 		if stem == stem.upper():
