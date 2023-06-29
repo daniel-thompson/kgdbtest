@@ -81,6 +81,7 @@ def config(kgdb=False, extra_config=None):
 
 	arch = get_arch()
 	defconfig = 'defconfig'
+	postconfig = ''
 	if 'NOWERROR' not in os.environ:
 		postconfig = '--enable WERROR'
 	if 'NODEFCONFIG' in os.environ:
@@ -138,7 +139,7 @@ def config(kgdb=False, extra_config=None):
                         '--enable SECURITY_LOCKDOWN_LSM ',
 			'Cannot configure kgdb extensions')
 
-	self_test = True
+	self_test = False
 	if self_test:
 		run('../scripts/config ' +
                         '--enable PROVE_LOCKING ' +
