@@ -99,6 +99,12 @@ def config(kgdb=False, extra_config=None):
 		# (at least on v5.16/mips). Since JFFS2 isn't used or
 		# tested by kgdbtest let's just disable it.
 		postconfig += ' --disable JFFS2_FS'
+
+		# SERIAL_8250_PCI1XXXX causes similar problems to JFFS2_FS
+		# (and was very briefly enabled by default). Disable it on
+		# those kernels:
+		# https://lore.kernel.org/all/20230305145124.13444-1-kumaravel.thiagarajan@microchip.com/
+		postconfig += ' --disable SERIAL_8250_PCI1XXXX'
 	elif 'riscv' == arch:
 		postconfig += ' --disable STRICT_KERNEL_RWX'
 		postconfig += ' --disable STRICT_MODULE_RWX'
