@@ -60,31 +60,13 @@ def run(cmd, failmsg=None):
 
 	'''
 
-	# Automatically manage bisect skipping
-	if failmsg:
-		try:
-			run(cmd)
-			return
-		except:
-			skip(failmsg)
-
 	print('+ ' + cmd)
 	(exit_code) = os.system(cmd)
 	if exit_code != 0:
-		raise Exception
-
-def skip(msg):
-	"""Report a catastrophic build error.
-
-        A catastrophic build error occurs when we cannot build the software
-        under test. This makes testing of any form impossible. We treat this
-        specially (and completely out of keeping with pytest philosophy because
-        it allows us to return a special error code that will cause git bisect
-        to look for a kernel we can compile.
-        """
-	traceback.print_exc()
-	print('### SKIP: %s ###' % (msg,))
-	sys.exit(125)
+		if failmsg:
+			raise Exception(failmsg)
+		else:
+			raise Exception
 
 def config(kgdb=False, extra_config=None):
 	kdir = get_kdir()
