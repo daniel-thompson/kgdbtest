@@ -32,6 +32,50 @@ def kdb():
 
 	qemu.close()
 
+def test_crlf(kdb):
+	'''Check that CRLF sequences don't execute two commands'''
+	c = kdb.console.enter_kdb()
+	try:
+		c.send('zyx\r\n')
+		c.expect('Unknown.*zyx')
+		c.expect_prompt(sync=False)
+		c.send('xyz\r\n')
+		# Check that the LF did not cause extra command processing
+		# to happen
+		assert 0 == c.expect(['Unknown[^\r\n]*xyz', 'kdb>'])
+		c.expect_prompt()
+
+		# Now let's send a LFCR sequence and verify we see the
+		# opposite behaviour (e.g. let's test that the above test
+		# sequence is good)
+		c.send('zyx\n\r')
+		c.expect('Unknown.*zyx')
+		c.expect_prompt(sync=False)
+		c.send('xyz\r\n')
+		# Check that the LF does cause extra command processing
+		# to happen when received in the wrong order
+		assert 1 == c.expect(['Unknown[^\r\n]*xyz', 'kdb>'])
+		c.expect('Unknown[^\r\n]*xyz')
+		c.expect_prompt()
+	finally:
+		c.exit_kdb()
+
+@pytest.mark.xfail(condition = kbuild.get_version() < (6, 5),
+		   reason = 'LF means CR was not introduced until v6.5')
+def test_lf(kdb):
+	'''Check that LF and CR act in the same way when parsing commands'''
+	c = kdb.console.enter_kdb()
+	try:
+		c.send('zyx\n')
+		c.expect('Unknown.*zyx')
+		c.expect_prompt()
+
+		c.send('xyz\r')
+		c.expect('Unknown.*xyz')
+		c.expect_prompt()
+	finally:
+		c.exit_kdb()
+
 def test_up(kdb):
 	kdb.console.enter_kdb()
 	try:
@@ -162,7 +206,7 @@ def test_pager_line(kdb):
 	try:
 		kdb.console.send('help\r')
 		kdb.console.expect('more>')
-		
+
 		for i in range(4):
 			kdb.console.send('\r')
 			# The pager flushes the input buffer after processing
