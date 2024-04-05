@@ -168,14 +168,15 @@ def test_btp(kdb):
 	assert output.startswith('Stack traceback for pid 1')
 	assert 'init\n' in output
 
-	# Normally init will sleep inside do_sigtimedwait() but if
-	# init is on the CPU (e.g. *init appears in the process list)
-	# then we are doing something else and will see kdb calls
-	# instead!
+	# Normally init will sleep inside do_sigtimedwait() or do_nanosleep()
+	# but if init is on the CPU (e.g. *init appears in the process list)
+	# then we are doing something else and will see kdb calls instead!
 	expect_sigtimedwait = '*init' not in output
 	if expect_sigtimedwait:
+		assert 'schedule' in output
 		assert ('do_sigtimedwait' in output or
-		        'sys_rt_sigtimedwait' in output)
+		        'sys_rt_sigtimedwait' in output or
+			'do_nanosleep' in output)
 	else:
 		assert 'kgdb_cpu_enter' in output
 
