@@ -1,0 +1,43 @@
+variables:
+  KUBERNETES_CPU_REQUEST: 4
+  KUBERNETES_MEMORY_REQUEST: 8G
+  KUBERNETES_EPHEMERAL_STORAGE_REQUEST: 20G
+
+.build:
+  stage: build
+  image: debian:bookworm-slim
+  tags:
+    - amd64-runner
+  script:
+    - apt-get update && apt-get upgrade -y
+    - apt install -y bc build-essential cpio file git python-is-python3 rsync unzip wget zstd
+    - make -s buildroot
+    - tar -cf - buildroot/${ARCH} | zstd -19 -T0 > buildroot-${ARCH}.tar.zst
+  artifacts:
+    paths:
+      - buildroot-${ARCH}.tar.zst
+
+build-arm:
+  extends: .build
+  variables:
+    ARCH: arm
+
+build-arm64:
+  extends: .build
+  variables:
+    ARCH: arm64
+
+build-mips:
+  extends: .build
+  variables:
+    ARCH: mips
+
+build-riscv:
+  extends: .build
+  variables:
+    ARCH: riscv
+
+build-x86:
+  extends: .build
+  variables:
+    ARCH: x86

@@ -423,7 +423,7 @@ def qemu(kdb=True, append=None, gdb=False, gfx=False, interactive=False, second_
 		cmd += ' -kernel arch/riscv/boot/Image'
 	elif arch == 'x86':
 		cmd = 'qemu-system-x86_64'
-		if host_arch == 'x86':
+		if host_arch == 'x86' and os.path.exists('/dev/kvm'):
 			cmd += ' -enable-kvm'
 		cmd += ' -m 1G -smp 2'
 		cmd += ' -kernel arch/x86/boot/bzImage'
