@@ -177,7 +177,10 @@ def run_command_kdb(self, cmd):
 			self.enter_kdb()
 
 		self.sendline(cmd)
-		self.expect(cmd + '[\r\n]*')
+
+		# This is likely to leave a leading \n in the output (which
+		# is why there is an lstrip() when we return the output.
+		self.expect(cmd + '[\r\n]')
 
 		# Absorb the output
 		while 1 == self.expect([r'[\r\n]+[\[\]0-9]*kdb> ', r'[\r\n]+more> ']):
@@ -192,7 +195,7 @@ def run_command_kdb(self, cmd):
 		if enter_kdb:
 			self.exit_kdb()
 
-	return output
+	return output.lstrip('\n')
 
 def get_regs_kdb(self):
 	"""Fetch and parse the regsister set.
@@ -396,10 +399,10 @@ def qemu(kdb=True, append=None, gdb=False, gfx=False, interactive=False, second_
 		cmd += ' -M vexpress-a15 -cpu cortex-a15'
 		cmd += ' -m 1G -smp 2'
 		cmd += ' -kernel arch/arm/boot/zImage'
-		cmd += ' -dtb arch/arm/boot/dts/vexpress-v2p-ca15-tc1.dtb'
+		cmd += ' -dtb arch/arm/boot/dts/arm/vexpress-v2p-ca15-tc1.dtb'
 	elif arch == 'arm64':
 		cmd = 'qemu-system-aarch64'
-		if host_arch == 'arm64':
+		if host_arch == 'arm64' and os.path.exists('/dev/kvm'):
 			cmd += ' -cpu host -M virt,gic_version=3,accel=kvm'
 		else:
 			cmd += ' -accel tcg,thread=multi '
