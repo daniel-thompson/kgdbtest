@@ -19,6 +19,9 @@ def kdb():
 
 @pytest.mark.xfail(condition = (kbuild.get_arch() == 'mips'),
                    reason = "Triggers breakpoint twice", run = False)
+# RISC-V bug reported here: https://lore.kernel.org/all/ZJ2PBosSQtSX28Mf@wychelm/
+@pytest.mark.xfail(condition = (kbuild.get_arch() == 'riscv' and kbuild.get_version() >= (6, 4)),
+                   reason = "Panics on resume")
 @pytest.mark.xfail(condition = (kbuild.get_arch() == 'x86'),
                    reason = "Triggers breakpoint twice", run = False)
 def test_BUG(kdb):
@@ -46,6 +49,9 @@ def test_BUG(kdb):
 
 @pytest.mark.xfail(condition = (kbuild.get_arch() == 'mips'),
                    reason = "Triggers breakpoint twice", run = False)
+# RISC-V bug reported here: https://lore.kernel.org/all/ZJ2PBosSQtSX28Mf@wychelm/
+@pytest.mark.xfail(condition = (kbuild.get_arch() == 'riscv' and kbuild.get_version() >= (6, 4)),
+                   reason = "Panics on resume")
 @pytest.mark.xfail(condition = (kbuild.get_arch() == 'x86'),
                    reason = "Triggers breakpoint twice", run = False)
 def test_BUG_again(kdb):
@@ -58,6 +64,9 @@ def test_BUG_again(kdb):
 	'''
 	test_BUG(kdb)
 
+# RISC-V bug reported here: https://lore.kernel.org/all/ZJ2PBosSQtSX28Mf@wychelm/
+@pytest.mark.xfail(condition = (kbuild.get_arch() == 'riscv' and kbuild.get_version() >= (6, 4)),
+                   reason = "Previous BUG() invocation kills this test")
 def test_WARNING(kdb):
 	'''
 	Test that kdb does *not* enter during a WARN_ON()
