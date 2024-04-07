@@ -461,8 +461,6 @@ def test_summary(kdb):
 		   reason = 'Stepping triggers breakpoint')
 @pytest.mark.xfail(condition = (kbuild.get_arch() == 'mips'),
 		   reason = 'Stepping triggers breakpoint')
-@pytest.mark.xfail(condition = (kbuild.get_arch() == 'arm64'),
-		   reason = 'Stepping does not advance PC')
 def test_ss(kdb):
 	'''
 	Test the `ss` command.
