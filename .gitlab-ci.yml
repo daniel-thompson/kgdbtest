@@ -7,7 +7,7 @@ variables:
   stage: build
   image: debian:bookworm-slim
   tags:
-    - amd64-runner
+    - arm64-runner
   script:
     - apt-get update && apt-get upgrade -y
     - apt install -y bc build-essential cpio file git python-is-python3 rsync unzip wget zstd
