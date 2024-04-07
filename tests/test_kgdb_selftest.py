@@ -124,6 +124,8 @@ def test_kgdbts_V1S10000(kernel):
 		   reason = 'fails approximately ~50% of the time')
 @pytest.mark.xfail(condition = (kbuild.get_arch() == 'x86'),
 		   reason = 'fails approximately ~30% of the time')
+@pytest.mark.xfail(condition = (kbuild.get_arch() == 'arm64'),
+           reason = 'BUG: scheduling while atomic occasionally when running in CI')
 def test_kgdbts_V1F1000(kernel):
 	'''
 	From drivers/misc/kgdbts.c:
