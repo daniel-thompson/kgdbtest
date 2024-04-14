@@ -32,6 +32,9 @@ def kdb():
 
 	qemu.close()
 
+
+@pytest.mark.xfail(condition = (kbuild.get_version() < (6, 5)), run = True,
+                   reason = 'Needs 1ed0555850cd ("kdb: Handle LF in the command parser") to pass')
 def test_crlf(kdb):
 	'''Check that CRLF sequences don't execute two commands'''
 	c = kdb.console.enter_kdb()
