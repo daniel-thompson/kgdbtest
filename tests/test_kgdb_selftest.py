@@ -37,8 +37,8 @@ def kernel(build):
 
 	qemu.close()
 
-#@pytest.mark.xfail(condition = (kbuild.get_arch() == 'arm'), run = True,
-#		   reason = 'Hangs during concurrency tests')
+@pytest.mark.xfail(condition = (kbuild.get_arch() == 'arm') and (kbuild.get_version() < (6, 7)),
+		   reason = 'Hangs during concurrency tests', run = True)
 @pytest.mark.xfail(condition = (kbuild.get_arch() == 'x86'), run = True,
 		   reason = 'hw_access breakpoints not trapping')
 def test_kgdbts_V1(kernel):
@@ -66,6 +66,8 @@ def test_kgdbts_V1(kernel):
 			count -= 1
 		kernel.console.expect_prompt()
 
+@pytest.mark.xfail(condition = (kbuild.get_arch() == 'arm') and (kbuild.get_version() < (6, 7)),
+		   reason = 'Hangs during concurrency tests', run = True)
 # These XFAILs do not reproduce reliably but it occurs frequently enough
 # to make the suite verdict unreliable so for now we have to mark them
 # accordingly. On x86 the failure rate is guestimated at ~15%.
@@ -120,12 +122,14 @@ def test_kgdbts_V1S10000(kernel):
 	kernel.console.sendline('for i in `seq $n`; do kill %$i; done; sleep 1')
 	kernel.console.expect_prompt()
 
+@pytest.mark.xfail(condition = (kbuild.get_arch() == 'arm') and (kbuild.get_version() < (6, 7)),
+		   reason = 'Hangs during concurrency tests', run = True)
+@pytest.mark.xfail(condition = (kbuild.get_arch() == 'arm64'),
+           reason = 'BUG: scheduling while atomic occasionally when running in CI')
 @pytest.mark.xfail(condition = (kbuild.get_arch() == 'riscv'),
 		   reason = 'fails approximately ~50% of the time')
 @pytest.mark.xfail(condition = (kbuild.get_arch() == 'x86'),
 		   reason = 'fails approximately ~30% of the time')
-@pytest.mark.xfail(condition = (kbuild.get_arch() == 'arm64'),
-           reason = 'BUG: scheduling while atomic occasionally when running in CI')
 def test_kgdbts_V1F1000(kernel):
 	'''
 	From drivers/misc/kgdbts.c:
