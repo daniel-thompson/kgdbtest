@@ -399,7 +399,10 @@ def qemu(kdb=True, append=None, gdb=False, gfx=False, interactive=False, second_
 		cmd += ' -M vexpress-a15 -cpu cortex-a15'
 		cmd += ' -m 1G -smp 2'
 		cmd += ' -kernel arch/arm/boot/zImage'
-		cmd += ' -dtb arch/arm/boot/dts/arm/vexpress-v2p-ca15-tc1.dtb'
+		if kbuild.get_version() < (6,5):
+			cmd += ' -dtb arch/arm/boot/dts/vexpress-v2p-ca15-tc1.dtb'
+		else:
+			cmd += ' -dtb arch/arm/boot/dts/arm/vexpress-v2p-ca15-tc1.dtb'
 	elif arch == 'arm64':
 		cmd = 'qemu-system-aarch64'
 		if host_arch == 'arm64' and os.path.exists('/dev/kvm'):
