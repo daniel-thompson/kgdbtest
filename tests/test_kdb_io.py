@@ -1,8 +1,10 @@
 import kbuild
 import ktest
 import pytest
+import re
 import time
 
+DEL = '\x7f'
 UP = '\x1b[A'
 DOWN = '\x1b[B'
 RIGHT = '\x1b[C'
@@ -323,5 +325,66 @@ def test_tab_search(kdb):
 
 		c.send('\r')
 		c.expect_prompt()
+	finally:
+		c.exit_kdb()
+
+def test_overflow(kdb):
+	'''Test that the line length is hard limited.
+
+	We can't use run_command() to capture the command output because
+	it gets confused by HOME which causes the kdb_prompt_str to be
+	reprinted as the line redraws. Instead we use expect_prompt()
+	to capture everything and then filter that with a regular expression
+	so we only capture the Unknown command output.
+	'''
+	p = re.compile("Unknown[ a-z]*: '([^']*)'")
+
+	c = kdb.console.enter_kdb()
+	try:
+		c.sendline(f'{"x" * 198}yyy')
+		cmd = p.search(c.expect_prompt(no_prompt=True)).group(1)
+		assert(cmd == ('x' * 198))
+
+		c.sendline(f'{"x" * 198}{LEFT}{LEFT}{LEFT}yyy')
+		cmd = p.search(c.expect_prompt(no_prompt=True)).group(1)
+		assert(cmd == ('x' * 198))
+
+		c.sendline(f'{"x" * 198}{HOME}yyy')
+		cmd = p.search(c.expect_prompt(no_prompt=True)).group(1)
+		assert(cmd == ('x' * 198))
+
+		# Check if we make space we can insert characters
+		c.sendline(f'{"x" * 198}{HOME}{DEL * 3}yyyzzz')
+		cmd = p.search(c.expect_prompt(no_prompt=True)).group(1)
+		assert(cmd == 'yyy' + ('x' * 195))
+	finally:
+		c.exit_kdb()
+
+@pytest.mark.xfail(condition = kbuild.get_version() < (6, 10),
+		   reason = 'overflows command line on tab')
+def test_overflow_and_tab(kdb):
+	'''Test that the line length limits are honoured during a tab completion.
+
+	Has same theory of operation as test_overflow().
+	'''
+	p = re.compile("Unknown[ a-z]*: '([^']*)'")
+
+	c = kdb.console.enter_kdb()
+	try:
+		# Test the test!
+		c.sendline(f"xxxx kdb_pro {'y' * 12}{HOME}{RIGHT * 12}\t")
+		cmd = p.search(c.expect_prompt(no_prompt=True)).group(1)
+		assert(cmd == 'xxxx kdb_prompt_str yyyyyyyyyyyy')
+
+		# Tab complete during overflow does nothing
+		c.sendline(f"xxxx kdb_pro {'y' * 200}{HOME}{RIGHT * 12}\t")
+		cmd = p.search(c.expect_prompt(no_prompt=True)).group(1)
+		assert(cmd == f"xxxx kdb_pro {'y' * (198-13)}")
+
+		# Tab complete partially completes until it hit the limit
+		c.sendline(f"xxxx kdb_pro {'y' * 200}{HOME}{RIGHT * 13}{DEL * 3}{LEFT}\t")
+		cmd = p.search(c.expect_prompt(no_prompt=True)).group(1)
+		assert(cmd == f"xxxx kdb_prompt {'y' * (198-16)}")
+
 	finally:
 		c.exit_kdb()

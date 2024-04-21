@@ -139,6 +139,8 @@ def expect_kdb(self, sync=True, no_prompt=False):
 	history and will not trigger the pager. This is useful for testing
 	command history and escape sequence handling.
 	"""
+	output = None
+
 	if sync and not no_prompt:
 		if 1 == self.expect_clean_output_until(['kdb>', 'more>']):
 			self.send('q')
@@ -148,8 +150,12 @@ def expect_kdb(self, sync=True, no_prompt=False):
 		tag = unique_tag('SYNC_KDB_')
 		self.send(tag + '\r')
 		self.expect_clean_output_until('Unknown[^\r\n]*' + tag)
+		if no_prompt:
+			output = self.before.replace('\r', '')
 
 	self.expect_clean_output_until('kdb>')
+
+	return output
 
 def sendline_kdb(self, s=''):
 	"""
@@ -179,7 +185,7 @@ def run_command_kdb(self, cmd):
 		self.sendline(cmd)
 
 		# This is likely to leave a leading \n in the output (which
-		# is why there is an lstrip() when we return the output.
+		# is why there is an lstrip() when we return the output).
 		self.expect(cmd + '[\r\n]')
 
 		# Absorb the output
