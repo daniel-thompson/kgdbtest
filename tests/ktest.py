@@ -40,6 +40,14 @@ def expect_boot(self, bootloader=(), skip_early=False, skip_late=False):
 	for msg in bootloader:
 		self.expect(msg)
 
+	# CI (especially on MIPS) is showing timeouts whilst we wait
+	# for the kernel to boot. We're don't usual expect boot to fail
+	# so no need to worry too much about test suite performance here.
+	# Let's extend the timeout period whilst we wait for kernel to
+	# boot. It will either be restored below or (if that branch is
+	# not taken) during a later call to expect_prompt().
+	self.timeout *= 4
+
 	if not skip_early:
 		self.expect('Linux version.*$')
 		self.expect('Calibrating delay loop')
@@ -48,7 +56,6 @@ def expect_boot(self, bootloader=(), skip_early=False, skip_late=False):
 	# TCG based VM on a busy machine). Extend the timeout until
 	# the next console interaction...
 	self.expect('[Uu]npack.*initramfs')
-	self.timeout *= 2
 
 	if not skip_late:
 		# Memory is not *always* freed after unpacking the initramfs so
@@ -73,6 +80,11 @@ def expect_boot(self, bootloader=(), skip_early=False, skip_late=False):
 		os.system('reset')
 
 def expect_busybox(self):
+	# CI (especially on MIPS) is showing timeouts whilst we wait
+	# for busybox. Let's extend the timeout period whilst we wait
+	# for userspace to come up. It is restored by expect_prompt().
+	self.timeout *= 4
+
 	self.expect('Starting .*: OK')
 	self.expect('Welcome to Buildroot')
 	self.expect(['debian-[^ ]* login:', 'buildroot login:'])
