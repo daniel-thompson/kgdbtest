@@ -10,13 +10,16 @@ def kgdb():
 
 	qemu = ktest.qemu(second_uart=True, gdb=True)
 
-        # Wait for qemu to boot
+    # Wait for qemu to boot
 	qemu.console.expect_boot()
 	qemu.console.expect_busybox()
 
-        # Ensure debugger it attached
+    # Ensure debugger it attached
 	qemu.console.sysrq('g')
 	qemu.debug.connect_to_target()
+	# styling is implemented using escape sequences (which confuses some of the
+	# regex matching. Fix this by unilaterally disabling styling (ignoreing any errors)
+	qemu.debug.send('set style enabled off\r')
 	qemu.debug.send('continue\r')
 	qemu.console.send('\r')
 	qemu.console.expect_prompt()
