@@ -372,17 +372,17 @@ def test_overflow_and_tab(kdb):
 	c = kdb.console.enter_kdb()
 	try:
 		# Test the test!
-		c.sendline(f"xxxx kdb_pro {'y' * 12}{HOME}{RIGHT * 12}\t")
+		c.sendline(f"xxxx kdb_prom {'y' * 12}{HOME}{RIGHT * 13}\t")
 		cmd = p.search(c.expect_prompt(no_prompt=True)).group(1)
 		assert(cmd == 'xxxx kdb_prompt_str yyyyyyyyyyyy')
 
 		# Tab complete during overflow does nothing
-		c.sendline(f"xxxx kdb_pro {'y' * 200}{HOME}{RIGHT * 12}\t")
+		c.sendline(f"xxxx kdb_prom {'y' * 199}{HOME}{RIGHT * 13}\t")
 		cmd = p.search(c.expect_prompt(no_prompt=True)).group(1)
-		assert(cmd == f"xxxx kdb_pro {'y' * (198-13)}")
+		assert(cmd == f"xxxx kdb_prom {'y' * (198-14)}")
 
 		# Tab complete partially completes until it hit the limit
-		c.sendline(f"xxxx kdb_pro {'y' * 200}{HOME}{RIGHT * 13}{DEL * 3}{LEFT}\t")
+		c.sendline(f"xxxx kdb_prom {'y' * 199}{HOME}{RIGHT * 14}{DEL * 2}{LEFT}\t")
 		cmd = p.search(c.expect_prompt(no_prompt=True)).group(1)
 		assert(cmd == f"xxxx kdb_prompt {'y' * (198-16)}")
 
