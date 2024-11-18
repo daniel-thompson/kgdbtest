@@ -1,9 +1,8 @@
 variables:
-  # This job runs fine with the arm64-runner defaults (storage is probably over-specified)
-  KUBERNETES_CPU_REQUEST: 4
-  #KUBERNETES_MEMORY_REQUEST: 4G
-  #KUBERNETES_EPHEMERAL_STORAGE_REQUEST: 20G
-  PROJECT_ID: 62615
+  # In the web UI navigate to the project and select Settings -> General
+  # from there the project will show next to the project name.
+  PROJECT_ID: 64594052
+
   REF_NAME: master
 
 test:
@@ -31,8 +30,8 @@ test:
   script:
     - apt-get update && apt-get -y upgrade
     - apt-get install -y bison bc build-essential cpio flex gdb git libelf-dev libncurses-dev libssl-dev picocom python3-pexpect python3-pytest qemu-system-arm qemu-system-misc qemu-system-mips qemu-system-x86 socat wget xz-utils zstd
-    - git clone https://git.codelinaro.org/daniel.thompson/kgdbtest.git -b ${REF_NAME} ${CI_BUILDS_DIR}/kgdbtest
-    - wget -O buildroot-${ARCH}.tar.zst https://git.codelinaro.org/api/v4/projects/${PROJECT_ID}/jobs/artifacts/${REF_NAME}/raw/buildroot-${ARCH}.tar.zst?job=build-${ARCH}
+    - git clone https://gitlab.com/daniel-thompson/kgdbtest.git -b ${REF_NAME} ${CI_BUILDS_DIR}/kgdbtest
+    - wget -O buildroot-${ARCH}.tar.zst https://gitlab.com/api/v4/projects/${PROJECT_ID}/jobs/artifacts/${REF_NAME}/raw/buildroot-${ARCH}.tar.zst?job=build-${ARCH}
     - tar -C ${CI_BUILDS_DIR}/kgdbtest -xf buildroot-${ARCH}.tar.zst
     - make -C ${CI_BUILDS_DIR}/kgdbtest kdmx
     - PYTEST_EXTRAFLAGS=--junit-xml=${PWD}/results.xml make -C ${CI_BUILDS_DIR}/kgdbtest V=2
