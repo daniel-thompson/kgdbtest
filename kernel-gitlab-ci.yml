@@ -30,7 +30,8 @@ test:
   script:
     - apt-get update && apt-get -y upgrade
     - apt-get install -y bison bc build-essential cpio flex gdb git libelf-dev libncurses-dev libssl-dev picocom python3-pexpect python3-pytest qemu-system-arm qemu-system-misc qemu-system-mips qemu-system-x86 socat wget xz-utils zstd
-    - git clone https://gitlab.com/daniel-thompson/kgdbtest.git -b ${REF_NAME} ${CI_BUILDS_DIR}/kgdbtest
+    - rm -rf ${CI_BUILDS_DIR}/kgdbtest
+    - git clone https://gitlab.com/daniel-thompson/kgdbtest.git -b ${REF_NAME} --depth 1 ${CI_BUILDS_DIR}/kgdbtest
     - wget -O buildroot-${ARCH}.tar.zst https://gitlab.com/api/v4/projects/${PROJECT_ID}/jobs/artifacts/${REF_NAME}/raw/buildroot-${ARCH}.tar.zst?job=build-${ARCH}
     - tar -C ${CI_BUILDS_DIR}/kgdbtest -xf buildroot-${ARCH}.tar.zst
     - make -C ${CI_BUILDS_DIR}/kgdbtest kdmx
