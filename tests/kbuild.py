@@ -96,16 +96,9 @@ def config(kgdb=False, extra_config=None):
 		postconfig += ' --enable CPU_MIPS64_R6 --enable MIPS_CPS'
 		postconfig += ' --enable BLK_DEV_INITRD'
 
-		# JFFS2_FS, FRAME_WARN and WERROR don't play nice together
-		# (at least on v5.16/mips). Since JFFS2 isn't used or
-		# tested by kgdbtest let's just disable it.
-		postconfig += ' --disable JFFS2_FS'
-
-		# SERIAL_8250_PCI1XXXX causes similar problems to JFFS2_FS
-		# (and was very briefly enabled by default). Disable it on
-		# those kernels:
-		# https://lore.kernel.org/all/20230305145124.13444-1-kumaravel.thiagarajan@microchip.com/
-		postconfig += ' --disable SERIAL_8250_PCI1XXXX'
+		# MIPS sets FRAME_WARN to 1024 by default and that causes
+		# trouble with WERROR. Let's increase the default!
+		postconfig += ' --set-val FRAME_WARN 2048'
 	elif 'riscv' == arch:
 		postconfig += ' --disable STRICT_KERNEL_RWX'
 		postconfig += ' --disable STRICT_MODULE_RWX'

@@ -406,6 +406,11 @@ def qemu(kdb=True, append=None, gdb=False, gfx=False, interactive=False, second_
 		# -EPROBE_DEFER. Putting it another way... we'll see timeouts
 		# in several tests unless we have an earlycon.
 		cmdline += ' earlycon=pl011,0x1c090000'
+	elif arch == 'mips':
+		# MIPS kernels on qemu sometimes hang after disabling the clocks.
+		# That's nothing to do with kgdb so we work round it in a fairly
+		# brutal manner.
+		cmdline += ' clk_ignore_unused'
 	if append:
 		cmdline += ' ' + append
 
