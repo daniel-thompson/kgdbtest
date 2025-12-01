@@ -22,8 +22,7 @@ def kdb(build):
 def kgdb(build):
 	qemu = ktest.qemu(second_uart=True, gdb=True, append='kgdbwait')
 
-	qemu.console.expect_boot(skip_late=True)
-	qemu.console.expect('Waiting for connection from remote gdb...')
+	qemu.console.expect_boot(want_gdb_message=True)
 	qemu.debug.connect_to_target()
 
 	yield qemu

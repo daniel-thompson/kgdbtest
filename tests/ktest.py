@@ -36,7 +36,7 @@ def unique_tag(prefix=''):
 	return prefix + ''.join(
 		    [random.choice(string.ascii_uppercase) for i in range(8)])
 
-def expect_boot(self, bootloader=(), skip_early=False, skip_late=False):
+def expect_boot(self, bootloader=(), skip_early=False, skip_late=False, want_gdb_message=False):
 	for msg in bootloader:
 		self.expect(msg)
 
@@ -57,7 +57,20 @@ def expect_boot(self, bootloader=(), skip_early=False, skip_late=False):
 	# the next console interaction...
 	self.expect('[Uu]npack.*initramfs')
 
-	if not skip_late:
+	if want_gdb_message:
+		# With buffered console and multiple UARTs then the "Waiting
+		# for..." message may not be output before we half the console
+		# code and talk on the debug UART.
+		if not self.gdb_on_second_uart:
+			# Wait for the connection message
+			self.expect('Waiting for connection from remote gdb...')
+
+			# Restore the normal timeout (this is unmatched, if
+			# we have multiple UARTs the long timeout will remain
+			# in effect for a long time).
+			self.timeout = self.default_timeout
+
+	elif not skip_late:
 		# Memory is not *always* freed after unpacking the initramfs so
 		# we must also look for other common messages that indicate we
 		# moved on from unpacking the initramfs.
@@ -334,9 +347,17 @@ class ConsoleWrapper(object):
 		# Needed by expect_boot()/expect_prompt()
 		console.default_timeout = console.timeout
 
+		# monitor is None when there is a second UART (because we
+		# didn't have to launch kdmx to monitor things). This flag
+		# is consumed by expect_boot() since the kgdb prompts may
+		# be buffered differently depending on how to console it
+		# connected.
+		console.gdb_on_second_uart = monitor == None
+
 		self.console = console
 		self.debug = debug
 		self.monitor = monitor
+
 
 	def close(self):
 		if self.monitor:

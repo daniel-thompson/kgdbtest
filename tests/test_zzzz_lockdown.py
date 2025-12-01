@@ -12,8 +12,7 @@ def test_kgdb_nolockdown():
 	qemu = ktest.qemu(second_uart=True, gdb=True, append='kgdbwait')
 	(console, gdb) = (qemu.console, qemu.debug)
 
-	console.expect_boot(skip_late=True)
-	console.expect('Waiting for connection from remote gdb...')
+	console.expect_boot(want_gdb_message=True)
 	gdb.connect_to_target()
 
 	gdb.send('where\r')
