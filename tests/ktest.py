@@ -58,18 +58,24 @@ def expect_boot(self, bootloader=(), skip_early=False, skip_late=False, want_gdb
 	self.expect('[Uu]npack.*initramfs')
 
 	if want_gdb_message:
+		# I can't find any flush that would force this message out...
+		# but in practice it has always been observed. We must do
+		# *something* to avoid connecting to gdb too early: without
+		# it we confuse kdb # since the first packets can be missed and the
+		# auto-switch fails).
+		self.expect('Registered I/O driver kgdboc')
+
+		# Restore the normal timeout
+		self.timeout = self.default_timeout
+
 		# With buffered console and multiple UARTs then the "Waiting
 		# for..." message may not be output before we half the console
 		# code and talk on the debug UART.
 		if not self.gdb_on_second_uart:
 			# Wait for the connection message
 			self.expect('Waiting for connection from remote gdb...')
-
-			# Restore the normal timeout (this is unmatched, if
-			# we have multiple UARTs the long timeout will remain
-			# in effect for a long time).
-			self.timeout = self.default_timeout
-
+		else:
+			time.sleep(1.0)
 	elif not skip_late:
 		# Memory is not *always* freed after unpacking the initramfs so
 		# we must also look for other common messages that indicate we
