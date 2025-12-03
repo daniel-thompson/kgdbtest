@@ -8,6 +8,9 @@ variables:
   image: debian:13-slim
   tags:
     - arm64-runner
+  variables:
+    # buildroot needs this set otherwise the GNU tar configure script will fail
+    FORCE_UNSAFE_CONFIGURE: 1
   script:
     - apt-get update && apt-get upgrade -y
     - apt install -y bc build-essential cpio file git python-is-python3 rsync unzip wget zstd
