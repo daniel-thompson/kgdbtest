@@ -7,7 +7,7 @@ variables:
 
 test:
   stage: test
-  image: debian:bookworm-slim
+  image: debian:13-slim
   tags:
     - arm64-runner
   parallel:

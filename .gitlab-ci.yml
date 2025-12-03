@@ -5,7 +5,7 @@ variables:
 
 .build:
   stage: build
-  image: debian:bookworm-slim
+  image: debian:13-slim
   tags:
     - arm64-runner
   script:
