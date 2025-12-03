@@ -66,7 +66,10 @@ def test_bp(kdb):
 	# Check it does not retrigger
 	c.sysrq('h')
 	c.expect('[sS]ys[rR]q.*HELP.*show-registers')
-	c.expect_prompt()
+	# Why no_history? When working with a buffered console it is possible
+	# for the prompt to appear *before* the sysrq output meaning we will
+	# not find the shell prompt in the history buffer.
+	c.expect_prompt(no_history=True)
 
 def test_bta(kdb):
 	'''
